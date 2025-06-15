@@ -1,0 +1,4214 @@
+
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>Phase 3 - Space Shooter</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body>
+    <!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phase 3 - Ultimate Liberation Flight v2.0</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            image-rendering: pixelated;
+            image-rendering: -moz-crisp-edges;
+            image-rendering: crisp-edges;
+        }
+        
+        body {
+            font-family: 'Press Start 2P', monospace;
+            background: #0a0a0a;
+            color: #F5E6D3;
+            overflow: hidden;
+            height: 100vh;
+            font-size: 12px;
+            line-height: 1.2;
+        }
+        
+        /* 화면 흔들림 효과 */
+        .screen-shake {
+            animation: screenShake 0.5s ease-in-out;
+        }
+        
+        @keyframes screenShake {
+            0%, 100% { transform: translate(0); }
+            10% { transform: translate(-2px, -1px); }
+            20% { transform: translate(2px, 1px); }
+            30% { transform: translate(-1px, 2px); }
+            40% { transform: translate(1px, -2px); }
+            50% { transform: translate(-2px, 1px); }
+            60% { transform: translate(2px, -1px); }
+            70% { transform: translate(-1px, -2px); }
+            80% { transform: translate(1px, 2px); }
+            90% { transform: translate(-2px, -1px); }
+        }
+        
+        /* Phase 3 전환 화면 */
+        .phase3-transition {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: linear-gradient(135deg, #1A0F2E, #2D1B4F, #4B2F5A, #4A90E2);
+            z-index: 250;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            animation: phaseTransition 3s ease-in-out;
+        }
+        
+        @keyframes phaseTransition {
+            0% { opacity: 0; }
+            50% { opacity: 1; }
+            100% { opacity: 1; }
+        }
+        
+        .phase3-title {
+            font-size: 2.5rem;
+            color: #4A90E2;
+            text-shadow: 2px 2px 0 #F5E6D3;
+            margin-bottom: 1rem;
+            animation: titlePulse 2s ease-in-out infinite;
+        }
+        
+        @keyframes titlePulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+        
+        .phase3-subtitle {
+            font-size: 0.8rem;
+            color: #F5E6D3;
+            text-align: center;
+            line-height: 1.4;
+            margin-bottom: 2rem;
+        }
+        
+        /* 우주선 슈팅 게임 스타일 */
+        .space-shooter-container {
+            display: none;
+            width: 100%;
+            height: 100%;
+            position: relative;
+            background: #0a0a0a;
+            overflow: hidden;
+            z-index: 200;
+        }
+        
+        .space-background {
+            position: absolute;
+            width: 100%;
+            height: 200%;
+            background: linear-gradient(to bottom, #0a0a0a 0%, #1a0f2e 50%, #2d1b4f 100%);
+            animation: spaceScroll 20s linear infinite;
+            transition: background 2s ease;
+        }
+        
+        /* 레벨별 배경 스타일 */
+        .space-background.level-1 {
+            background: linear-gradient(to bottom, #0a0a0a 0%, #1a0f2e 50%, #2d1b4f 100%);
+        }
+        
+        .space-background.level-2 {
+            background: linear-gradient(to bottom, #1a0f2e 0%, #2d1b4f 40%, #4b2f5a 80%, #5a3c6d 100%);
+        }
+        
+        .space-background.level-3 {
+            background: linear-gradient(to bottom, #2d1b4f 0%, #4b2f5a 30%, #6b4980 60%, #8b5aa0 100%);
+        }
+        
+        .space-background.level-4 {
+            background: linear-gradient(to bottom, #4b2f5a 0%, #6b4980 25%, #8b5aa0 50%, #ab6bc0 75%, #cb7ce0 100%);
+        }
+        
+        .space-background.level-5 {
+            background: linear-gradient(to bottom, #6b4980 0%, #8b5aa0 20%, #ab6bc0 40%, #cb7ce0 60%, #eb8cff 80%, #ff9cff 100%);
+        }
+        
+        .space-background.level-6 {
+            background: linear-gradient(to bottom, 
+                #8b5aa0 0%, 
+                #ab6bc0 15%, 
+                #cb7ce0 30%, 
+                #eb8cff 45%, 
+                #ff9cff 60%, 
+                #ffb366 80%, 
+                #ffd700 100%);
+        }
+        
+        .space-background.level-7 {
+            background: linear-gradient(to bottom, 
+                #ab6bc0 0%, 
+                #cb7ce0 10%, 
+                #eb8cff 20%, 
+                #ff9cff 35%, 
+                #ffb366 50%, 
+                #ffd700 70%, 
+                #ffeb99 90%, 
+                #ffffff 100%);
+        }
+        
+        .stars-bg {
+            position: absolute;
+            width: 100%;
+            height: 200%;
+            pointer-events: none;
+            animation: spaceScroll 30s linear infinite;
+        }
+        
+        /* 레벨별 별 스크롤 속도 */
+        .stars-bg.level-1 { animation-duration: 30s; }
+        .stars-bg.level-2 { animation-duration: 27s; }
+        .stars-bg.level-3 { animation-duration: 24s; }
+        .stars-bg.level-4 { animation-duration: 21s; }
+        .stars-bg.level-5 { animation-duration: 18s; }
+        .stars-bg.level-6 { animation-duration: 15s; }
+        .stars-bg.level-7 { animation-duration: 12s; }
+        
+        .star-bg {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: #F5E6D3;
+            opacity: 0.8;
+            animation: inherit;
+        }
+        
+        @keyframes spaceScroll {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(-50%); }
+        }
+        
+        /* 레벨별 스크롤 속도 */
+        .space-background.level-1 { animation-duration: 20s; }
+        .space-background.level-2 { animation-duration: 18s; }
+        .space-background.level-3 { animation-duration: 16s; }
+        .space-background.level-4 { animation-duration: 14s; }
+        .space-background.level-5 { animation-duration: 12s; }
+        .space-background.level-6 { animation-duration: 10s; }
+        .space-background.level-7 { animation-duration: 8s; }
+        
+        .spaceship {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            bottom: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10;
+            background: transparent;
+            transition: filter 0.3s ease;
+        }
+        
+        .spaceship::before {
+            content: '';
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: #4A90E2;
+            top: -20px;
+            left: -20px;
+            box-shadow:
+                /* 우주선 끝 부분 (위) */
+                20px 0px 0 #4A90E2,
+                
+                /* 날개 윗부분 */
+                12px 4px 0 #4A90E2,
+                16px 4px 0 #F5E6D3,
+                20px 4px 0 #F5E6D3,
+                24px 4px 0 #F5E6D3,
+                28px 4px 0 #4A90E2,
+                
+                /* 날개 중간 */
+                8px 8px 0 #4A90E2,
+                12px 8px 0 #F5E6D3,
+                16px 8px 0 #F5E6D3,
+                20px 8px 0 #E8A87C,
+                24px 8px 0 #F5E6D3,
+                28px 8px 0 #F5E6D3,
+                32px 8px 0 #4A90E2,
+                
+                /* 몸통 상단 */
+                4px 12px 0 #4A90E2,
+                8px 12px 0 #F5E6D3,
+                12px 12px 0 #F5E6D3,
+                16px 12px 0 #E8A87C,
+                20px 12px 0 #E8A87C,
+                24px 12px 0 #E8A87C,
+                28px 12px 0 #F5E6D3,
+                32px 12px 0 #F5E6D3,
+                36px 12px 0 #4A90E2,
+                
+                /* 몸통 중간 */
+                0px 16px 0 #8B5A3C,
+                4px 16px 0 #F5E6D3,
+                8px 16px 0 #F5E6D3,
+                12px 16px 0 #E8A87C,
+                16px 16px 0 #DC2626,
+                20px 16px 0 #DC2626,
+                24px 16px 0 #DC2626,
+                28px 16px 0 #E8A87C,
+                32px 16px 0 #F5E6D3,
+                36px 16px 0 #F5E6D3,
+                40px 16px 0 #8B5A3C,
+                
+                /* 몸통 하단 */
+                4px 20px 0 #8B5A3C,
+                8px 20px 0 #F5E6D3,
+                12px 20px 0 #E8A87C,
+                16px 20px 0 #E8A87C,
+                20px 20px 0 #E8A87C,
+                24px 20px 0 #E8A87C,
+                28px 20px 0 #E8A87C,
+                32px 20px 0 #F5E6D3,
+                36px 20px 0 #8B5A3C,
+                
+                /* 엔진 부분 */
+                8px 24px 0 #4A90E2,
+                12px 24px 0 #10B981,
+                16px 24px 0 #10B981,
+                20px 24px 0 #F5D423,
+                24px 24px 0 #10B981,
+                28px 24px 0 #10B981,
+                32px 24px 0 #4A90E2,
+                
+                /* 엔진 불꽃 */
+                12px 28px 0 #F5D423,
+                16px 28px 0 #F39C12,
+                20px 28px 0 #E74C3C,
+                24px 28px 0 #F39C12,
+                28px 28px 0 #F5D423,
+                
+                16px 32px 0 #F39C12,
+                20px 32px 0 #DC2626,
+                24px 32px 0 #F39C12;
+        }
+        
+        .spaceship.invulnerable {
+            animation: shipBlink 0.2s steps(2) infinite;
+        }
+        
+        .spaceship.charging {
+            filter: brightness(1.5) drop-shadow(0 0 10px #F5D423);
+        }
+        
+        .spaceship.dashing {
+            filter: brightness(2) drop-shadow(0 0 20px #4A90E2);
+        }
+        
+        .spaceship::after {
+            content: '';
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: transparent;
+            top: -20px;
+            left: -20px;
+            animation: engineFlame 0.3s ease-in-out infinite alternate;
+            box-shadow:
+                /* 엔진 불꽃 기본 상태 */
+                16px 32px 0 #F39C12,
+                20px 32px 0 #DC2626,
+                24px 32px 0 #F39C12,
+                
+                20px 36px 0 #F5D423;
+        }
+        
+        @keyframes engineFlame {
+            to {
+                box-shadow:
+                    /* 엔진 불꽃 애니메이션 상태 */
+                    16px 32px 0 #F5D423,
+                    20px 32px 0 #F39C12,
+                    24px 32px 0 #F5D423,
+                    
+                    16px 36px 0 #DC2626,
+                    20px 36px 0 #E74C3C,
+                    24px 36px 0 #DC2626,
+                    
+                    20px 40px 0 #F39C12;
+            }
+        }
+        
+        @keyframes shipBlink {
+            0% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+        
+        /* 다양한 총알 타입 */
+        .bullet {
+            position: absolute;
+            width: 3px;
+            height: 3px;
+            background: #F5E6D3;
+            filter: drop-shadow(0 0 4px #4A90E2);
+            box-shadow: 
+                0 0 4px #4A90E2,
+                0 -3px 0 #4A90E2,
+                0 -6px 0 #F5E6D3,
+                0 -9px 0 #4A90E2;
+        }
+        
+        .bullet.laser {
+            width: 2px;
+            height: 20px;
+            background: linear-gradient(to bottom, #ff0040, #ff6060, #ff0040);
+            filter: drop-shadow(0 0 8px #ff0040);
+            box-shadow: none;
+        }
+        
+        .bullet.missile {
+            width: 4px;
+            height: 8px;
+            background: #F5D423;
+            filter: drop-shadow(0 0 6px #F5D423);
+            box-shadow: 
+                0 0 6px #F5D423,
+                0 4px 0 #F39C12,
+                0 8px 0 #DC2626;
+        }
+        
+        .bullet.spread {
+            width: 2px;
+            height: 2px;
+            background: #10B981;
+            filter: drop-shadow(0 0 3px #10B981);
+            border-radius: 50%;
+        }
+        
+        .bullet.piercing {
+            width: 2px;
+            height: 15px;
+            background: linear-gradient(to bottom, #9B59B6, #E74C3C, #9B59B6);
+            filter: drop-shadow(0 0 6px #9B59B6);
+            box-shadow: none;
+        }
+        
+        /* 적 종류 확장 */
+        .enemy {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: transparent;
+            filter: drop-shadow(0 0 4px #DC2626);
+        }
+        
+        .enemy.fast {
+            filter: drop-shadow(0 0 6px #FF6B6B);
+            animation: fastEnemyMove 0.5s ease-in-out infinite alternate;
+        }
+        
+        .enemy.tank {
+            filter: drop-shadow(0 0 8px #8B1A1A);
+            transform: scale(1.2);
+        }
+        
+        .enemy.sniper {
+            filter: drop-shadow(0 0 4px #FFD700);
+            animation: sniperGlow 2s ease-in-out infinite;
+        }
+        
+        @keyframes fastEnemyMove {
+            0% { transform: translateX(-2px); }
+            100% { transform: translateX(2px); }
+        }
+        
+        @keyframes sniperGlow {
+            0%, 100% { filter: drop-shadow(0 0 4px #FFD700); }
+            50% { filter: drop-shadow(0 0 12px #FFD700); }
+        }
+        
+        .enemy::before {
+            content: '';
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: #DC2626;
+            top: -16px;
+            left: -16px;
+            box-shadow:
+                /* 적 우주선 디자인 */
+                16px 0px 0 #DC2626,
+                
+                8px 4px 0 #DC2626,
+                12px 4px 0 #8B1A1A,
+                16px 4px 0 #8B1A1A,
+                20px 4px 0 #8B1A1A,
+                24px 4px 0 #DC2626,
+                
+                4px 8px 0 #DC2626,
+                8px 8px 0 #8B1A1A,
+                12px 8px 0 #DC2626,
+                16px 8px 0 #F5E6D3,
+                20px 8px 0 #DC2626,
+                24px 8px 0 #8B1A1A,
+                28px 8px 0 #DC2626,
+                
+                0px 12px 0 #DC2626,
+                4px 12px 0 #8B1A1A,
+                8px 12px 0 #DC2626,
+                12px 12px 0 #DC2626,
+                16px 12px 0 #DC2626,
+                20px 12px 0 #DC2626,
+                24px 12px 0 #DC2626,
+                28px 12px 0 #8B1A1A,
+                32px 12px 0 #DC2626,
+                
+                8px 16px 0 #8B1A1A,
+                12px 16px 0 #DC2626,
+                16px 16px 0 #DC2626,
+                20px 16px 0 #DC2626,
+                24px 16px 0 #8B1A1A,
+                
+                12px 20px 0 #8B1A1A,
+                16px 20px 0 #8B1A1A,
+                20px 20px 0 #8B1A1A;
+        }
+        
+        /* 탱크 적 스타일 */
+        .enemy.tank::before {
+            box-shadow:
+                /* 더 큰 탱크 적 */
+                16px 0px 0 #8B1A1A,
+                
+                8px 4px 0 #8B1A1A,
+                12px 4px 0 #DC2626,
+                16px 4px 0 #DC2626,
+                20px 4px 0 #DC2626,
+                24px 4px 0 #8B1A1A,
+                
+                4px 8px 0 #8B1A1A,
+                8px 8px 0 #DC2626,
+                12px 8px 0 #F5E6D3,
+                16px 8px 0 #F5E6D3,
+                20px 8px 0 #F5E6D3,
+                24px 8px 0 #DC2626,
+                28px 8px 0 #8B1A1A,
+                
+                0px 12px 0 #8B1A1A,
+                4px 12px 0 #DC2626,
+                8px 12px 0 #F5E6D3,
+                12px 12px 0 #DC2626,
+                16px 12px 0 #DC2626,
+                20px 12px 0 #DC2626,
+                24px 12px 0 #F5E6D3,
+                28px 12px 0 #DC2626,
+                32px 12px 0 #8B1A1A,
+                
+                4px 16px 0 #8B1A1A,
+                8px 16px 0 #DC2626,
+                12px 16px 0 #DC2626,
+                16px 16px 0 #DC2626,
+                20px 16px 0 #DC2626,
+                24px 16px 0 #DC2626,
+                28px 16px 0 #8B1A1A,
+                
+                8px 20px 0 #8B1A1A,
+                12px 20px 0 #8B1A1A,
+                16px 20px 0 #8B1A1A,
+                20px 20px 0 #8B1A1A,
+                24px 20px 0 #8B1A1A;
+        }
+        
+        /* 스나이퍼 적 스타일 */
+        .enemy.sniper::before {
+            box-shadow:
+                /* 스나이퍼 적 */
+                16px 0px 0 #FFD700,
+                
+                12px 4px 0 #FFD700,
+                16px 4px 0 #FF6B6B,
+                20px 4px 0 #FFD700,
+                
+                8px 8px 0 #FFD700,
+                12px 8px 0 #FF6B6B,
+                16px 8px 0 #F5E6D3,
+                20px 8px 0 #FF6B6B,
+                24px 8px 0 #FFD700,
+                
+                8px 12px 0 #FF6B6B,
+                12px 12px 0 #FFD700,
+                16px 12px 0 #FFD700,
+                20px 12px 0 #FFD700,
+                24px 12px 0 #FF6B6B,
+                
+                12px 16px 0 #FF6B6B,
+                16px 16px 0 #FF6B6B,
+                20px 16px 0 #FF6B6B;
+        }
+        
+        /* 보스 적 */
+        .boss-enemy {
+            position: absolute;
+            width: 6px;
+            height: 6px;
+            background: transparent;
+            filter: drop-shadow(0 0 8px #DC2626);
+            animation: bossFloat 3s ease-in-out infinite;
+        }
+        
+        .boss-enemy::before {
+            content: '';
+            position: absolute;
+            width: 6px;
+            height: 6px;
+            background: #DC2626;
+            top: -30px;
+            left: -30px;
+            box-shadow:
+                /* 보스 우주선 - 더 크고 위협적 */
+                30px 0px 0 #DC2626,
+                
+                18px 6px 0 #DC2626,
+                24px 6px 0 #8B1A1A,
+                30px 6px 0 #8B1A1A,
+                36px 6px 0 #8B1A1A,
+                42px 6px 0 #DC2626,
+                
+                12px 12px 0 #DC2626,
+                18px 12px 0 #8B1A1A,
+                24px 12px 0 #DC2626,
+                30px 12px 0 #F5D423,
+                36px 12px 0 #DC2626,
+                42px 12px 0 #8B1A1A,
+                48px 12px 0 #DC2626,
+                
+                6px 18px 0 #DC2626,
+                12px 18px 0 #8B1A1A,
+                18px 18px 0 #DC2626,
+                24px 18px 0 #DC2626,
+                30px 18px 0 #DC2626,
+                36px 18px 0 #DC2626,
+                42px 18px 0 #DC2626,
+                48px 18px 0 #8B1A1A,
+                54px 18px 0 #DC2626,
+                
+                0px 24px 0 #8B1A1A,
+                6px 24px 0 #DC2626,
+                12px 24px 0 #8B1A1A,
+                18px 24px 0 #DC2626,
+                24px 24px 0 #DC2626,
+                30px 24px 0 #F5D423,
+                36px 24px 0 #DC2626,
+                42px 24px 0 #DC2626,
+                48px 24px 0 #8B1A1A,
+                54px 24px 0 #DC2626,
+                60px 24px 0 #8B1A1A,
+                
+                12px 30px 0 #8B1A1A,
+                18px 30px 0 #DC2626,
+                24px 30px 0 #DC2626,
+                30px 30px 0 #DC2626,
+                36px 30px 0 #DC2626,
+                42px 30px 0 #DC2626,
+                48px 30px 0 #8B1A1A,
+                
+                18px 36px 0 #8B1A1A,
+                24px 36px 0 #8B1A1A,
+                30px 36px 0 #8B1A1A,
+                36px 36px 0 #8B1A1A,
+                42px 36px 0 #8B1A1A;
+        }
+        
+        @keyframes bossFloat {
+            0%, 100% { transform: translateY(0) scale(1); }
+            50% { transform: translateY(-10px) scale(1.05); }
+        }
+        
+        .enemy::after {
+            content: '!';
+            position: absolute;
+            top: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 8px;
+            color: #DC2626;
+            text-shadow: 0 0 4px #DC2626;
+            animation: dangerBlink 0.5s ease-in-out infinite;
+        }
+        
+        .enemy.fast::after {
+            content: '⚡';
+            color: #FF6B6B;
+            text-shadow: 0 0 6px #FF6B6B;
+        }
+        
+        .enemy.tank::after {
+            content: '🛡';
+            color: #8B1A1A;
+            text-shadow: 0 0 8px #8B1A1A;
+        }
+        
+        .enemy.sniper::after {
+            content: '🎯';
+            color: #FFD700;
+            text-shadow: 0 0 4px #FFD700;
+        }
+        
+        .boss-enemy::after {
+            content: 'BOSS';
+            position: absolute;
+            top: -45px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 6px;
+            color: #F5D423;
+            text-shadow: 0 0 8px #F5D423;
+            animation: bossText 1s ease-in-out infinite;
+        }
+        
+        @keyframes bossText {
+            0%, 100% { opacity: 0.8; transform: translateX(-50%) scale(1); }
+            50% { opacity: 1; transform: translateX(-50%) scale(1.2); }
+        }
+        
+        @keyframes dangerBlink {
+            0%, 100% { opacity: 0.8; }
+            50% { opacity: 1; }
+        }
+        
+        /* 적 총알 확장 */
+        .enemy-bullet {
+            position: absolute;
+            width: 3px;
+            height: 3px;
+            background: #DC2626;
+            filter: drop-shadow(0 0 3px #DC2626);
+            box-shadow: 
+                0 0 4px #DC2626,
+                -1px -1px 0 #F39C12,
+                1px -1px 0 #F39C12,
+                0 -2px 0 #DC2626;
+        }
+        
+        .enemy-bullet.sniper {
+            width: 2px;
+            height: 10px;
+            background: linear-gradient(to bottom, #FFD700, #FF6B6B);
+            filter: drop-shadow(0 0 6px #FFD700);
+            box-shadow: none;
+        }
+        
+        .enemy-bullet.rapid {
+            width: 2px;
+            height: 2px;
+            background: #FF6B6B;
+            filter: drop-shadow(0 0 2px #FF6B6B);
+            border-radius: 50%;
+        }
+        
+        /* 운석 */
+        .asteroid {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: transparent;
+            animation: asteroidSpin 4s linear infinite;
+            filter: drop-shadow(0 0 3px #8B5A3C);
+        }
+        
+        .asteroid::before {
+            content: '';
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: #8B5A3C;
+            top: -12px;
+            left: -12px;
+            box-shadow:
+                /* 운석 픽셀 아트 */
+                8px 0px 0 #5C3A2C,
+                12px 0px 0 #5C3A2C,
+                
+                4px 4px 0 #5C3A2C,
+                8px 4px 0 #8B5A3C,
+                12px 4px 0 #5C3A2C,
+                16px 4px 0 #5C3A2C,
+                
+                0px 8px 0 #5C3A2C,
+                4px 8px 0 #8B5A3C,
+                8px 8px 0 #5C3A2C,
+                12px 8px 0 #8B5A3C,
+                16px 8px 0 #5C3A2C,
+                20px 8px 0 #5C3A2C,
+                
+                0px 12px 0 #5C3A2C,
+                4px 12px 0 #5C3A2C,
+                8px 12px 0 #8B5A3C,
+                12px 12px 0 #5C3A2C,
+                16px 12px 0 #5C3A2C,
+                20px 12px 0 #5C3A2C,
+                
+                4px 16px 0 #5C3A2C,
+                8px 16px 0 #5C3A2C,
+                12px 16px 0 #8B5A3C,
+                16px 16px 0 #5C3A2C,
+                
+                8px 20px 0 #5C3A2C,
+                12px 20px 0 #5C3A2C;
+        }
+        
+        .asteroid::after {
+            content: 'X';
+            position: absolute;
+            top: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 6px;
+            color: #8B5A3C;
+            text-shadow: 0 0 3px #8B5A3C;
+            opacity: 0.8;
+        }
+        
+        @keyframes asteroidSpin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* 다양한 파워업 타입 */
+        .powerup-shooter {
+            position: absolute;
+            width: 6px;
+            height: 6px;
+            background: transparent;
+            animation: powerUpFloat 2s ease-in-out infinite;
+            filter: drop-shadow(0 0 8px #10B981);
+        }
+        
+        .powerup-shooter.weapon {
+            filter: drop-shadow(0 0 8px #10B981);
+        }
+        
+        .powerup-shooter.health {
+            filter: drop-shadow(0 0 8px #E74C3C);
+        }
+        
+        .powerup-shooter.shield {
+            filter: drop-shadow(0 0 8px #4A90E2);
+        }
+        
+        .powerup-shooter.score {
+            filter: drop-shadow(0 0 8px #F5D423);
+        }
+        
+        .powerup-shooter.special-ability {
+            filter: drop-shadow(0 0 12px #9B59B6);
+            animation: specialAbilityFloat 1.5s ease-in-out infinite;
+        }
+        
+        .powerup-shooter.time-slow {
+            filter: drop-shadow(0 0 10px #4ECDC4);
+        }
+        
+        @keyframes specialAbilityFloat {
+            0%, 100% { 
+                transform: translateY(0) scale(1) rotate(0deg); 
+                filter: drop-shadow(0 0 12px #9B59B6);
+            }
+            50% { 
+                transform: translateY(-8px) scale(1.2) rotate(180deg); 
+                filter: drop-shadow(0 0 20px #9B59B6);
+            }
+        }
+        
+        .powerup-shooter::before {
+            content: '';
+            position: absolute;
+            width: 6px;
+            height: 6px;
+            background: #10B981;
+            top: -15px;
+            left: -15px;
+            animation: powerUpPulse 0.5s ease-in-out infinite alternate;
+            box-shadow:
+                /* 파워업 픽셀 아트 - 큰 별 모양 */
+                15px 0px 0 #10B981,
+                
+                9px 3px 0 #10B981,
+                12px 3px 0 #F5D423,
+                15px 3px 0 #F5D423,
+                18px 3px 0 #F5D423,
+                21px 3px 0 #10B981,
+                
+                6px 6px 0 #10B981,
+                9px 6px 0 #F5D423,
+                12px 6px 0 #10B981,
+                15px 6px 0 #10B981,
+                18px 6px 0 #10B981,
+                21px 6px 0 #F5D423,
+                24px 6px 0 #10B981,
+                
+                3px 9px 0 #10B981,
+                6px 9px 0 #F5D423,
+                9px 9px 0 #10B981,
+                12px 9px 0 #10B981,
+                15px 9px 0 #F5E6D3,
+                18px 9px 0 #10B981,
+                21px 9px 0 #10B981,
+                24px 9px 0 #F5D423,
+                27px 9px 0 #10B981,
+                
+                0px 12px 0 #10B981,
+                3px 12px 0 #F5D423,
+                6px 12px 0 #10B981,
+                9px 12px 0 #10B981,
+                12px 12px 0 #F5E6D3,
+                15px 12px 0 #F5E6D3,
+                18px 12px 0 #F5E6D3,
+                21px 12px 0 #10B981,
+                24px 12px 0 #10B981,
+                27px 12px 0 #F5D423,
+                30px 12px 0 #10B981,
+                
+                0px 15px 0 #10B981,
+                3px 15px 0 #F5D423,
+                6px 15px 0 #10B981,
+                9px 15px 0 #10B981,
+                12px 15px 0 #F5E6D3,
+                15px 15px 0 #F5E6D3,
+                18px 15px 0 #F5E6D3,
+                21px 15px 0 #10B981,
+                24px 15px 0 #10B981,
+                27px 15px 0 #F5D423,
+                30px 15px 0 #10B981,
+                
+                3px 18px 0 #10B981,
+                6px 18px 0 #F5D423,
+                9px 18px 0 #10B981,
+                12px 18px 0 #10B981,
+                15px 18px 0 #F5E6D3,
+                18px 18px 0 #10B981,
+                21px 18px 0 #10B981,
+                24px 18px 0 #F5D423,
+                27px 18px 0 #10B981,
+                
+                6px 21px 0 #10B981,
+                9px 21px 0 #F5D423,
+                12px 21px 0 #10B981,
+                15px 21px 0 #10B981,
+                18px 21px 0 #10B981,
+                21px 21px 0 #F5D423,
+                24px 21px 0 #10B981,
+                
+                9px 24px 0 #10B981,
+                12px 24px 0 #F5D423,
+                15px 24px 0 #F5D423,
+                18px 24px 0 #F5D423,
+                21px 24px 0 #10B981,
+                
+                15px 27px 0 #10B981;
+        }
+        
+        /* 체력 파워업 */
+        .powerup-shooter.health::before {
+            box-shadow:
+                /* 체력 십자가 모양 */
+                15px 0px 0 #E74C3C,
+                
+                12px 3px 0 #E74C3C,
+                15px 3px 0 #E74C3C,
+                18px 3px 0 #E74C3C,
+                
+                9px 6px 0 #E74C3C,
+                12px 6px 0 #E74C3C,
+                15px 6px 0 #F5E6D3,
+                18px 6px 0 #E74C3C,
+                21px 6px 0 #E74C3C,
+                
+                9px 9px 0 #E74C3C,
+                12px 9px 0 #E74C3C,
+                15px 9px 0 #F5E6D3,
+                18px 9px 0 #E74C3C,
+                21px 9px 0 #E74C3C,
+                
+                12px 12px 0 #E74C3C,
+                15px 12px 0 #E74C3C,
+                18px 12px 0 #E74C3C,
+                
+                15px 15px 0 #E74C3C;
+        }
+        
+        /* 방패 파워업 */
+        .powerup-shooter.shield::before {
+            box-shadow:
+                /* 방패 모양 */
+                15px 0px 0 #4A90E2,
+                
+                12px 3px 0 #4A90E2,
+                15px 3px 0 #4A90E2,
+                18px 3px 0 #4A90E2,
+                
+                9px 6px 0 #4A90E2,
+                12px 6px 0 #4A90E2,
+                15px 6px 0 #F5E6D3,
+                18px 6px 0 #4A90E2,
+                21px 6px 0 #4A90E2,
+                
+                9px 9px 0 #4A90E2,
+                12px 9px 0 #F5E6D3,
+                15px 9px 0 #F5E6D3,
+                18px 9px 0 #F5E6D3,
+                21px 9px 0 #4A90E2,
+                
+                12px 12px 0 #4A90E2,
+                15px 12px 0 #F5E6D3,
+                18px 12px 0 #4A90E2,
+                
+                15px 15px 0 #4A90E2;
+        }
+        
+        /* 특수 능력 파워업 */
+        .powerup-shooter.special-ability::before {
+            box-shadow:
+                /* 특수 능력 다이아몬드 모양 */
+                15px 0px 0 #9B59B6,
+                
+                12px 3px 0 #9B59B6,
+                15px 3px 0 #E74C3C,
+                18px 3px 0 #9B59B6,
+                
+                9px 6px 0 #9B59B6,
+                12px 6px 0 #E74C3C,
+                15px 6px 0 #F5D423,
+                18px 6px 0 #E74C3C,
+                21px 6px 0 #9B59B6,
+                
+                6px 9px 0 #9B59B6,
+                9px 9px 0 #E74C3C,
+                12px 9px 0 #F5D423,
+                15px 9px 0 #F5E6D3,
+                18px 9px 0 #F5D423,
+                21px 9px 0 #E74C3C,
+                24px 9px 0 #9B59B6,
+                
+                9px 12px 0 #9B59B6,
+                12px 12px 0 #E74C3C,
+                15px 12px 0 #F5D423,
+                18px 12px 0 #E74C3C,
+                21px 12px 0 #9B59B6,
+                
+                12px 15px 0 #9B59B6,
+                15px 15px 0 #E74C3C,
+                18px 15px 0 #9B59B6,
+                
+                15px 18px 0 #9B59B6;
+        }
+        
+        /* 시간 정지 파워업 */
+        .powerup-shooter.time-slow::before {
+            box-shadow:
+                /* 시계 모양 */
+                15px 0px 0 #4ECDC4,
+                
+                12px 3px 0 #4ECDC4,
+                15px 3px 0 #4ECDC4,
+                18px 3px 0 #4ECDC4,
+                
+                9px 6px 0 #4ECDC4,
+                12px 6px 0 #F5E6D3,
+                15px 6px 0 #4ECDC4,
+                18px 6px 0 #F5E6D3,
+                21px 6px 0 #4ECDC4,
+                
+                9px 9px 0 #4ECDC4,
+                12px 9px 0 #F5E6D3,
+                15px 9px 0 #F5E6D3,
+                18px 9px 0 #F5E6D3,
+                21px 9px 0 #4ECDC4,
+                
+                12px 12px 0 #4ECDC4,
+                15px 12px 0 #4ECDC4,
+                18px 12px 0 #4ECDC4,
+                
+                15px 15px 0 #4ECDC4;
+        }
+        
+        @keyframes powerUpPulse {
+            from { transform: scale(1); }
+            to { transform: scale(1.1); }
+        }
+        
+        .powerup-shooter::after {
+            content: 'POWER!';
+            position: absolute;
+            top: 35px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 6px;
+            color: #10B981;
+            text-shadow: 0 0 4px #10B981;
+            white-space: nowrap;
+            animation: powerUpText 1s ease-in-out infinite;
+        }
+        
+        .powerup-shooter.health::after {
+            content: 'HEALTH!';
+            color: #E74C3C;
+            text-shadow: 0 0 4px #E74C3C;
+        }
+        
+        .powerup-shooter.shield::after {
+            content: 'SHIELD!';
+            color: #4A90E2;
+            text-shadow: 0 0 4px #4A90E2;
+        }
+        
+        .powerup-shooter.score::after {
+            content: 'BONUS!';
+            color: #F5D423;
+            text-shadow: 0 0 4px #F5D423;
+        }
+        
+        .powerup-shooter.special-ability::after {
+            content: 'MEGA SHOT!';
+            color: #9B59B6;
+            text-shadow: 0 0 8px #9B59B6;
+        }
+        
+        .powerup-shooter.time-slow::after {
+            content: 'TIME SLOW!';
+            color: #4ECDC4;
+            text-shadow: 0 0 6px #4ECDC4;
+        }
+        
+        @keyframes powerUpText {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+        
+        @keyframes powerUpFloat {
+            0%, 100% { 
+                transform: translateY(0) scale(1); 
+                filter: drop-shadow(0 0 8px #10B981);
+            }
+            50% { 
+                transform: translateY(-5px) scale(1.1); 
+                filter: drop-shadow(0 0 16px #10B981);
+            }
+        }
+        
+        /* 폭발 효과 강화 */
+        .explosion {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            animation: explode 0.5s ease-out forwards;
+        }
+        
+        .explosion.large {
+            animation: explodeLarge 0.8s ease-out forwards;
+        }
+        
+        .explosion::before {
+            content: '';
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: #F5D423;
+            top: -20px;
+            left: -20px;
+            animation: explosionPixels 0.5s ease-out forwards;
+            box-shadow:
+                /* 폭발 픽셀 패턴 */
+                20px 0px 0 #F39C12,
+                
+                8px 4px 0 #F5D423,
+                12px 4px 0 #E74C3C,
+                16px 4px 0 #DC2626,
+                24px 4px 0 #E74C3C,
+                28px 4px 0 #F5D423,
+                
+                4px 8px 0 #F39C12,
+                8px 8px 0 #E74C3C,
+                16px 8px 0 #F5D423,
+                24px 8px 0 #DC2626,
+                28px 8px 0 #E74C3C,
+                32px 8px 0 #F39C12,
+                
+                0px 12px 0 #E74C3C,
+                8px 12px 0 #DC2626,
+                12px 12px 0 #F5D423,
+                20px 12px 0 #F5D423,
+                24px 12px 0 #DC2626,
+                32px 12px 0 #E74C3C,
+                36px 12px 0 #F5D423,
+                
+                0px 16px 0 #F5D423,
+                4px 16px 0 #DC2626,
+                12px 16px 0 #E74C3C,
+                20px 16px 0 #E74C3C,
+                28px 16px 0 #DC2626,
+                32px 16px 0 #F5D423,
+                36px 16px 0 #F39C12,
+                
+                4px 20px 0 #F39C12,
+                8px 20px 0 #E74C3C,
+                16px 20px 0 #F5D423,
+                24px 20px 0 #DC2626,
+                28px 20px 0 #E74C3C,
+                32px 20px 0 #F39C12,
+                
+                8px 24px 0 #F5D423,
+                12px 24px 0 #E74C3C,
+                16px 24px 0 #DC2626,
+                24px 24px 0 #E74C3C,
+                28px 24px 0 #F5D423,
+                
+                20px 28px 0 #F39C12;
+        }
+        
+        .explosion.large::before {
+            animation: explosionPixelsLarge 0.8s ease-out forwards;
+        }
+        
+        @keyframes explosionPixels {
+            0% { 
+                transform: scale(0.5); 
+                opacity: 1; 
+            }
+            100% { 
+                transform: scale(2) rotate(45deg); 
+                opacity: 0; 
+            }
+        }
+        
+        @keyframes explosionPixelsLarge {
+            0% { 
+                transform: scale(0.3); 
+                opacity: 1; 
+            }
+            50% {
+                transform: scale(1.5) rotate(22deg);
+                opacity: 0.8;
+            }
+            100% { 
+                transform: scale(3) rotate(45deg); 
+                opacity: 0; 
+            }
+        }
+        
+        /* UI 개선 */
+        .shooter-ui {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            right: 20px;
+            display: flex;
+            justify-content: space-between;
+            z-index: 20;
+        }
+        
+        .shooter-stats {
+            background: rgba(26, 15, 46, 0.9);
+            border: 2px solid #F5E6D3;
+            padding: 10px 15px;
+            font-size: 0.6rem;
+            color: #F5E6D3;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(245, 230, 211, 0.3);
+        }
+        
+        .shooter-abilities {
+            background: rgba(26, 15, 46, 0.9);
+            border: 2px solid #9B59B6;
+            padding: 10px 15px;
+            font-size: 0.5rem;
+            color: #F5E6D3;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(155, 89, 182, 0.3);
+        }
+        
+        .ability-cooldown {
+            display: flex;
+            gap: 10px;
+            margin-top: 5px;
+        }
+        
+        .ability-icon {
+            width: 20px;
+            height: 20px;
+            background: #4B5563;
+            border-radius: 3px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.6rem;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+        
+        .ability-icon.ready {
+            background: #10B981;
+            box-shadow: 0 0 8px #10B981;
+            animation: abilityReady 1s ease-in-out infinite;
+        }
+        
+        .ability-icon.cooldown {
+            background: #DC2626;
+            opacity: 0.5;
+        }
+        
+        @keyframes abilityReady {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+        
+        .ability-icon::after {
+            content: attr(data-cooldown);
+            position: absolute;
+            top: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.4rem;
+            color: #DC2626;
+            opacity: 0;
+        }
+        
+        .ability-icon.cooldown::after {
+            opacity: 1;
+        }
+        
+        .weapon-indicator {
+            display: flex;
+            gap: 5px;
+            margin-top: 5px;
+        }
+        
+        .weapon-dot {
+            width: 8px;
+            height: 8px;
+            background: #4B5563;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+        }
+        
+        .weapon-dot.active {
+            background: #10B981;
+            box-shadow: 0 0 5px #10B981;
+        }
+        
+        .combo-indicator {
+            margin-top: 5px;
+            font-size: 0.5rem;
+            color: #F5D423;
+        }
+        
+        .boss-health-bar {
+            position: absolute;
+            top: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 300px;
+            height: 20px;
+            background: #4B5563;
+            border: 3px solid #F5E6D3;
+            display: none;
+            z-index: 20;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+        
+        .boss-health-fill {
+            height: 100%;
+            background: linear-gradient(to right, #DC2626, #E74C3C);
+            transition: width 0.3s ease;
+            width: 100%;
+        }
+        
+        .back-btn {
+            background: #8B5A3C;
+            color: #F5E6D3;
+            border: 2px solid #F5E6D3;
+            padding: 0.4rem 0.8rem;
+            font-family: inherit;
+            font-size: 0.5rem;
+            cursor: pointer;
+            text-transform: uppercase;
+            border-radius: 3px;
+            transition: all 0.3s ease;
+        }
+        
+        .back-btn:hover {
+            background: #F5E6D3;
+            color: #8B5A3C;
+            transform: scale(1.05);
+        }
+        
+        .message {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #1A0F2E;
+            color: #F5E6D3;
+            border: 3px solid #E8A87C;
+            padding: 20px 30px;
+            font-size: 0.6rem;
+            text-align: center;
+            z-index: 100;
+            display: none;
+            max-width: 400px;
+            line-height: 1.4;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(232, 168, 124, 0.5);
+        }
+        
+        .victory-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: linear-gradient(135deg, #1A0F2E, #2D1B4F, #4B2F5A, #E8A87C);
+            z-index: 300;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            animation: victoryAnimation 4s ease-in-out;
+        }
+        
+        @keyframes victoryAnimation {
+            0% { opacity: 0; transform: scale(0.8); }
+            50% { opacity: 1; transform: scale(1.1); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+        
+        .victory-title {
+            font-size: 3rem;
+            color: #F5E6D3;
+            text-shadow: 3px 3px 0 #8B5A3C;
+            margin-bottom: 1rem;
+            animation: victoryPulse 2s ease-in-out infinite;
+        }
+        
+        @keyframes victoryPulse {
+            0%, 100% { transform: scale(1) rotate(0deg); }
+            50% { transform: scale(1.2) rotate(2deg); }
+        }
+        
+        .shooter-legend {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(26, 15, 46, 0.8);
+            border: 2px solid #F5E6D3;
+            padding: 10px 15px;
+            font-size: 0.5rem;
+            color: #F5E6D3;
+            z-index: 20;
+            line-height: 1.8;
+            border-radius: 5px;
+        }
+        
+        .legend-good {
+            color: #10B981;
+            text-shadow: 0 0 2px #10B981;
+        }
+        
+        .legend-bad {
+            color: #DC2626;
+            text-shadow: 0 0 2px #DC2626;
+        }
+        
+        .restart-btn {
+            background: #10B981;
+            color: #1A0F2E;
+            border: 3px solid #F5E6D3;
+            padding: 1rem 2rem;
+            font-family: inherit;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            border-radius: 5px;
+        }
+        
+        .restart-btn:hover {
+            background: #F5E6D3;
+            color: #10B981;
+            transform: scale(1.05);
+        }
+        
+        .cosmic-particle {
+            position: absolute;
+            width: 2px;
+            height: 40px;
+            background: linear-gradient(to bottom, transparent, #ffd700, transparent);
+            opacity: 0.6;
+            animation: cosmicFall linear infinite;
+        }
+        
+        @keyframes cosmicFall {
+            0% { transform: translateY(-40px); }
+            100% { transform: translateY(100vh); }
+        }
+        
+        .cosmic-particle.level-5 {
+            background: linear-gradient(to bottom, transparent, #4A90E2, transparent);
+        }
+        
+        .cosmic-particle.level-6 {
+            background: linear-gradient(to bottom, transparent, #9B59B6, transparent);
+        }
+        
+        .cosmic-particle.level-7 {
+            background: linear-gradient(to bottom, transparent, #ff6b6b, #ffd700, #4A90E2, transparent);
+            width: 3px;
+            height: 60px;
+        }
+        
+        /* 시간 정지 효과 */
+        .time-slow-effect {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(78, 205, 196, 0.1);
+            z-index: 5;
+            pointer-events: none;
+            animation: timeSlowPulse 0.5s ease-in-out infinite alternate;
+        }
+        
+        @keyframes timeSlowPulse {
+            0% { opacity: 0.1; }
+            100% { opacity: 0.3; }
+        }
+        
+        .time-slow-active * {
+            animation-duration: 3s !important;
+        }
+        
+        /* 새로운 보상 애니메이션들 */
+        @keyframes coinFloat {
+            0%, 100% { 
+                transform: translateY(0) scale(1) rotate(0deg); 
+            }
+            50% { 
+                transform: translateY(-8px) scale(1.1) rotate(180deg); 
+            }
+        }
+        
+        @keyframes specialRewardFloat {
+            0%, 100% { 
+                transform: translateY(0) scale(1) rotate(0deg); 
+                box-shadow: 0 0 16px #F5D423;
+            }
+            50% { 
+                transform: translateY(-10px) scale(1.2) rotate(180deg); 
+                box-shadow: 0 0 32px #F5D423, 0 0 64px #E8A87C;
+            }
+        }
+        
+        @keyframes scoreFloat {
+            0% { 
+                opacity: 1; 
+                transform: translateY(0) scale(1); 
+            }
+            100% { 
+                opacity: 0; 
+                transform: translateY(-40px) scale(1.2); 
+            }
+        }
+        
+        @keyframes coinCollectFloat {
+            0% { 
+                opacity: 1; 
+                transform: translateY(0) scale(1); 
+            }
+            50% {
+                opacity: 1;
+                transform: translateY(-20px) scale(1.3);
+            }
+            100% { 
+                opacity: 0; 
+                transform: translateY(-30px) scale(0.8); 
+            }
+        }
+        
+        @keyframes specialCollectFloat {
+            0% { 
+                opacity: 1; 
+                transform: translateY(0) scale(1) rotate(0deg); 
+            }
+            25% {
+                opacity: 1;
+                transform: translateY(-15px) scale(1.5) rotate(90deg);
+            }
+            50% {
+                opacity: 1;
+                transform: translateY(-25px) scale(1.8) rotate(180deg);
+            }
+            75% {
+                opacity: 0.8;
+                transform: translateY(-35px) scale(1.2) rotate(270deg);
+            }
+            100% { 
+                opacity: 0; 
+                transform: translateY(-50px) scale(0.5) rotate(360deg); 
+            }
+        }
+        
+        @keyframes specialParticleFloat {
+            0% { 
+                opacity: 1; 
+                transform: translate(0, 0) scale(1); 
+            }
+            100% { 
+                opacity: 0; 
+                transform: translate(var(--random-x, 50px), var(--random-y, -50px)) scale(0); 
+            }
+        }
+        
+        /* 콤보 효과 개선 */
+        @keyframes comboFloat {
+            0% { 
+                opacity: 1; 
+                transform: translateY(0) scale(1); 
+            }
+            100% { 
+                opacity: 0; 
+                transform: translateY(-50px) scale(1.5); 
+            }
+        }
+        
+        /* 레벨업 애니메이션 */
+        @keyframes levelUpAnimation {
+            0% { 
+                opacity: 0; 
+                transform: translate(-50%, -50%) scale(0.5); 
+            }
+            50% { 
+                opacity: 1; 
+                transform: translate(-50%, -50%) scale(1.2); 
+            }
+            100% { 
+                opacity: 0; 
+                transform: translate(-50%, -50%) scale(1); 
+            }
+        }
+        
+        /* 방패 효과 */
+        .spaceship.shielded {
+            filter: drop-shadow(0 0 10px #4A90E2);
+        }
+        
+        .spaceship.shielded::before {
+            animation: shieldPulse 1s ease-in-out infinite;
+        }
+        
+        @keyframes shieldPulse {
+            0%, 100% { 
+                filter: brightness(1); 
+            }
+            50% { 
+                filter: brightness(1.5); 
+            }
+        }
+        
+        /* 파티클 시스템 */
+        .particle {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: #F5D423;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 5;
+        }
+        
+        .particle.spark {
+            background: #F39C12;
+            animation: sparkFloat 0.8s ease-out forwards;
+        }
+        
+        .particle.trail {
+            background: linear-gradient(45deg, #4A90E2, transparent);
+            width: 1px;
+            height: 8px;
+            animation: trailFade 0.5s ease-out forwards;
+        }
+        
+        @keyframes sparkFloat {
+            0% { 
+                opacity: 1; 
+                transform: translate(0, 0) scale(1); 
+            }
+            100% { 
+                opacity: 0; 
+                transform: translate(var(--dx, 20px), var(--dy, -20px)) scale(0); 
+            }
+        }
+        
+        @keyframes trailFade {
+            0% { 
+                opacity: 0.8; 
+                transform: scaleY(1); 
+            }
+            100% { 
+                opacity: 0; 
+                transform: scaleY(0); 
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 메시지 표시 요소 -->
+    <div id="message" style="
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: rgba(0, 0, 0, 0.9);
+        color: #F5E6D3;
+        padding: 20px 40px;
+        border-radius: 10px;
+        text-align: center;
+        z-index: 1000;
+        font-size: 1.2rem;
+        display: none;
+        border: 2px solid #E8A87C;
+    "></div>
+    
+    <!-- Phase 3 전환 화면 -->
+    <div class="phase3-transition" id="phase3-transition">
+        <div class="phase3-title">PHASE 3 - ENHANCED</div>
+        <div class="phase3-subtitle" id="subtitle">
+            Your mind is now in perfect harmony<br>
+            Time to break free from all constraints<br><br>
+            Navigate through the cosmos<br>
+            and claim your ultimate liberation<br><br>
+            <span style="color: #F5D423;">Starting in 5...</span>
+        </div>
+        
+        <div style="margin-top: 30px; font-size: 0.6rem; line-height: 2;">
+            <div style="color: #10B981; margin-bottom: 10px;">
+                <span style="display: inline-block; width: 30px;">⭐</span> = POWER UP (GOOD!)
+            </div>
+            <div style="color: #DC2626; margin-bottom: 10px;">
+                <span style="display: inline-block; width: 30px;">!</span> = ENEMY SHIP (BAD!)
+            </div>
+            <div style="color: #FF6B6B; margin-bottom: 10px;">
+                <span style="display: inline-block; width: 30px;">⚡</span> = FAST ENEMY (VERY BAD!)
+            </div>
+            <div style="color: #8B1A1A; margin-bottom: 10px;">
+                <span style="display: inline-block; width: 30px;">🛡</span> = TANK ENEMY (TOUGH!)
+            </div>
+            <div style="color: #FFD700; margin-bottom: 10px;">
+                <span style="display: inline-block; width: 30px;">🎯</span> = SNIPER ENEMY (PRECISE!)
+            </div>
+            <div style="color: #8B5A3C; margin-bottom: 10px;">
+                <span style="display: inline-block; width: 30px;">X</span> = ASTEROID (BAD!)
+            </div>
+            <div style="color: #F5D423;">
+                <span style="display: inline-block; width: 30px;">👑</span> = BOSS (VERY BAD!)
+            </div>
+        </div>
+        
+        <div style="margin-top: 20px; font-size: 0.5rem; color: #4A90E2;">
+            Use ARROW KEYS or WASD to move<br>
+            SPACEBAR to shoot<br>
+            Q = Mega Shot (when ready)<br>
+            E = Time Slow (when ready)<br>
+            SHIFT = Dash (when ready)
+        </div>
+    </div>
+    
+    <!-- 우주선 슈팅 게임 컨테이너 -->
+    <div class="space-shooter-container" id="space-shooter-container">
+        <div class="space-background"></div>
+        <div class="stars-bg" id="stars-bg"></div>
+        
+        <div class="shooter-ui">
+            <div class="shooter-stats">
+                <div>SCORE: <span id="shooter-score">0</span></div>
+                <div>HEALTH: <span id="shooter-health">5</span></div>
+                <div>LEVEL: <span id="shooter-level">1</span></div>
+                <div>WEAPON TYPE: <span id="weapon-type">NORMAL</span></div>
+                <div>WEAPON LEVEL: 
+                    <div class="weapon-indicator">
+                        <div class="weapon-dot active"></div>
+                        <div class="weapon-dot"></div>
+                        <div class="weapon-dot"></div>
+                    </div>
+                </div>
+                <div class="combo-indicator" id="combo-indicator" style="display: none;">
+                    COMBO: <span id="combo-count">0</span>x
+                </div>
+            </div>
+            
+            <div class="shooter-abilities">
+                <div>SPECIAL ABILITIES:</div>
+                <div class="ability-cooldown">
+                    <div class="ability-icon ready" id="mega-shot-icon" data-ability="mega-shot">💥</div>
+                    <div class="ability-icon ready" id="time-slow-icon" data-ability="time-slow">⏰</div>
+                    <div class="ability-icon ready" id="dash-icon" data-ability="dash">⚡</div>
+                </div>
+                <div style="font-size: 0.4rem; margin-top: 5px; color: #9B59B6;">
+                    Q=Mega | E=Time | SHIFT=Dash
+                </div>
+            </div>
+            
+            <button class="back-btn" onclick="testRestart()">RESTART</button>
+        </div>
+        
+        <div class="boss-health-bar" id="boss-health-bar">
+            <div class="boss-health-fill" id="boss-health-fill"></div>
+        </div>
+        
+        <div class="spaceship" id="spaceship"></div>
+    </div>
+    
+    <div class="message" id="message"></div>
+    
+    <div class="victory-screen" id="victory-screen">
+        <div class="victory-title">ULTIMATE LIBERATION</div>
+        <div class="victory-message" id="victory-message">
+            You have transcended all boundaries!<br><br>
+            Through cosmic battles across 7 planes of existence,<br>
+            you have achieved true freedom.<br><br>
+            Your journey through the stars is complete,<br>
+            but your spirit soars eternal.<br><br>
+        </div>
+        <button class="restart-btn" onclick="testRestart()">PLAY AGAIN</button>
+    </div>
+
+    <script>
+        // 게임 상태
+        let gameState = {
+            phase3: {
+                active: false,
+                score: 0,
+                health: 5,
+                weaponLevel: 1,
+                weaponType: 'normal', // normal, laser, missile, spread, piercing
+                level: 1,
+                bossHealth: 100,
+                targetScore: 5000,
+                combo: 0,
+                maxCombo: 0,
+                shielded: false,
+                shieldTime: 0,
+                abilities: {
+                    megaShot: { ready: true, cooldown: 0, maxCooldown: 300 },
+                    timeSlow: { ready: true, cooldown: 0, maxCooldown: 600 },
+                    dash: { ready: true, cooldown: 0, maxCooldown: 180 }
+                },
+                timeSlowActive: false,
+                timeSlowDuration: 0
+            }
+        };
+        
+        // 우주선 슈팅 게임 변수들
+        let shooterGame = {
+            spaceship: { x: window.innerWidth / 2, y: window.innerHeight - 100 },
+            bullets: [],
+            enemies: [],
+            enemyBullets: [],
+            asteroids: [],
+            powerups: [],
+            bosses: [],
+            particles: [],
+            lastShoot: 0,
+            enemySpawnTimer: 0,
+            gameRunning: false,
+            invulnerable: false,
+            bossMode: false,
+            lastHit: 0,
+            dashActive: false,
+            dashDuration: 0
+        };
+        
+        let keys = {};
+        
+        // 오디오 컨텍스트
+        let audioContext = null;
+        
+        function initAudio() {
+            try {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                return true;
+            } catch (error) {
+                console.warn('Audio not supported:', error);
+                return false;
+            }
+        }
+        
+        function playSound(soundName) {
+            if (!audioContext) return;
+            
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            switch(soundName) {
+                case 'shoot':
+                    oscillator.type = 'sine';
+                    oscillator.frequency.setValueAtTime(1000, audioContext.currentTime);
+                    oscillator.frequency.linearRampToValueAtTime(500, audioContext.currentTime + 0.1);
+                    gainNode.gain.value = 0.2;
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
+                    oscillator.start();
+                    oscillator.stop(audioContext.currentTime + 0.1);
+                    break;
+                case 'laser':
+                    oscillator.type = 'sawtooth';
+                    oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
+                    oscillator.frequency.linearRampToValueAtTime(1200, audioContext.currentTime + 0.15);
+                    gainNode.gain.value = 0.3;
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.15);
+                    oscillator.start();
+                    oscillator.stop(audioContext.currentTime + 0.15);
+                    break;
+                case 'missile':
+                    oscillator.type = 'square';
+                    oscillator.frequency.setValueAtTime(400, audioContext.currentTime);
+                    oscillator.frequency.linearRampToValueAtTime(600, audioContext.currentTime + 0.2);
+                    gainNode.gain.value = 0.25;
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
+                    oscillator.start();
+                    oscillator.stop(audioContext.currentTime + 0.2);
+                    break;
+                case 'megaShot':
+                    oscillator.type = 'sawtooth';
+                    oscillator.frequency.setValueAtTime(200, audioContext.currentTime);
+                    oscillator.frequency.linearRampToValueAtTime(2000, audioContext.currentTime + 0.4);
+                    gainNode.gain.value = 0.4;
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.4);
+                    oscillator.start();
+                    oscillator.stop(audioContext.currentTime + 0.4);
+                    break;
+                case 'dash':
+                    oscillator.type = 'sine';
+                    oscillator.frequency.setValueAtTime(1500, audioContext.currentTime);
+                    oscillator.frequency.linearRampToValueAtTime(800, audioContext.currentTime + 0.2);
+                    gainNode.gain.value = 0.3;
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
+                    oscillator.start();
+                    oscillator.stop(audioContext.currentTime + 0.2);
+                    break;
+                case 'timeSlow':
+                    oscillator.type = 'triangle';
+                    oscillator.frequency.setValueAtTime(300, audioContext.currentTime);
+                    oscillator.frequency.linearRampToValueAtTime(100, audioContext.currentTime + 1);
+                    gainNode.gain.value = 0.2;
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 1);
+                    oscillator.start();
+                    oscillator.stop(audioContext.currentTime + 1);
+                    break;
+                case 'enemyHit':
+                    oscillator.type = 'sawtooth';
+                    oscillator.frequency.value = 220;
+                    gainNode.gain.value = 0.3;
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.15);
+                    oscillator.start();
+                    oscillator.stop(audioContext.currentTime + 0.15);
+                    break;
+                case 'powerupCollect':
+                    oscillator.type = 'sine';
+                    oscillator.frequency.setValueAtTime(523, audioContext.currentTime);
+                    oscillator.frequency.linearRampToValueAtTime(1047, audioContext.currentTime + 0.3);
+                    gainNode.gain.value = 0.3;
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+                    oscillator.start();
+                    oscillator.stop(audioContext.currentTime + 0.3);
+                    break;
+                case 'damage':
+                    oscillator.type = 'sawtooth';
+                    oscillator.frequency.value = 110;
+                    gainNode.gain.value = 0.3;
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
+                    oscillator.start();
+                    oscillator.stop(audioContext.currentTime + 0.1);
+                    break;
+                case 'victory':
+                    oscillator.type = 'sine';
+                    oscillator.frequency.setValueAtTime(523, audioContext.currentTime);
+                    oscillator.frequency.linearRampToValueAtTime(784, audioContext.currentTime + 0.2);
+                    oscillator.frequency.linearRampToValueAtTime(1047, audioContext.currentTime + 0.4);
+                    gainNode.gain.value = 0.4;
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.6);
+                    oscillator.start();
+                    oscillator.stop(audioContext.currentTime + 0.6);
+                    break;
+                case 'levelUp':
+                    oscillator.type = 'sine';
+                    oscillator.frequency.setValueAtTime(392, audioContext.currentTime);
+                    oscillator.frequency.linearRampToValueAtTime(523, audioContext.currentTime + 0.1);
+                    oscillator.frequency.linearRampToValueAtTime(659, audioContext.currentTime + 0.2);
+                    oscillator.frequency.linearRampToValueAtTime(784, audioContext.currentTime + 0.3);
+                    gainNode.gain.value = 0.3;
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.4);
+                    oscillator.start();
+                    oscillator.stop(audioContext.currentTime + 0.4);
+                    break;
+                case 'combo':
+                    oscillator.type = 'sine';
+                    oscillator.frequency.value = 659 + (gameState.phase3.combo * 50);
+                    gainNode.gain.value = 0.2;
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
+                    oscillator.start();
+                    oscillator.stop(audioContext.currentTime + 0.2);
+                    break;
+                case 'bossSpawn':
+                    oscillator.type = 'sawtooth';
+                    oscillator.frequency.setValueAtTime(55, audioContext.currentTime);
+                    oscillator.frequency.linearRampToValueAtTime(110, audioContext.currentTime + 1);
+                    gainNode.gain.value = 0.4;
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 1);
+                    oscillator.start();
+                    oscillator.stop(audioContext.currentTime + 1);
+                    break;
+            }
+        }
+        
+        // 별 배경 생성
+        function createStarBackground() {
+            try {
+                const starsContainer = document.getElementById('stars-bg');
+                if (!starsContainer) {
+                    console.error('Stars container not found');
+                    return;
+                }
+                
+                starsContainer.innerHTML = '';
+                for (let i = 0; i < 150; i++) {
+                    const star = document.createElement('div');
+                    star.className = 'star-bg';
+                    star.style.left = Math.random() * 100 + '%';
+                    star.style.top = Math.random() * 200 + '%';
+                    star.style.opacity = Math.random() * 0.8 + 0.2;
+                    star.style.width = (Math.random() * 3 + 1) + 'px';
+                    star.style.height = star.style.width;
+                    starsContainer.appendChild(star);
+                }
+                console.log('Star background created successfully');
+            } catch (error) {
+                console.error('Create Star Background Error:', error);
+            }
+        }
+        
+        // Phase 3 시작
+        function startPhase3() {
+            const transitionEl = document.getElementById('phase3-transition');
+            if (transitionEl) {
+                transitionEl.style.display = 'none';
+            }
+            enterSpaceShooter();
+        }
+        
+        // 우주선 슈팅 게임 시작
+        function enterSpaceShooter() {
+            try {
+                const container = document.getElementById('space-shooter-container');
+                const spaceship = document.getElementById('spaceship');
+                const background = document.querySelector('.space-background');
+                const starsContainer = document.getElementById('stars-bg');
+                
+                if (!container || !spaceship) {
+                    console.error('Required game elements not found');
+                    return;
+                }
+                
+                gameState.phase3.active = true;
+                
+                // 게임 상태 초기화
+                gameState.phase3.score = 0;
+                gameState.phase3.health = 5;
+                gameState.phase3.weaponLevel = 1;
+                gameState.phase3.weaponType = 'normal';
+                gameState.phase3.level = 1;
+                gameState.phase3.bossHealth = 100;
+                gameState.phase3.combo = 0;
+                gameState.phase3.maxCombo = 0;
+                gameState.phase3.shielded = false;
+                gameState.phase3.shieldTime = 0;
+                gameState.phase3.timeSlowActive = false;
+                gameState.phase3.timeSlowDuration = 0;
+                
+                // 능력 초기화
+                gameState.phase3.abilities.megaShot = { ready: true, cooldown: 0, maxCooldown: 300 };
+                gameState.phase3.abilities.timeSlow = { ready: true, cooldown: 0, maxCooldown: 600 };
+                gameState.phase3.abilities.dash = { ready: true, cooldown: 0, maxCooldown: 180 };
+                
+                // 우주선 위치 초기화
+                shooterGame.spaceship.x = window.innerWidth / 2;
+                shooterGame.spaceship.y = window.innerHeight - 150;
+                shooterGame.bullets = [];
+                shooterGame.enemies = [];
+                shooterGame.enemyBullets = [];
+                shooterGame.asteroids = [];
+                shooterGame.powerups = [];
+                shooterGame.bosses = [];
+                shooterGame.particles = [];
+                shooterGame.gameRunning = true;
+                shooterGame.invulnerable = false;
+                shooterGame.bossMode = false;
+                shooterGame.lastHit = 0;
+                shooterGame.dashActive = false;
+                shooterGame.dashDuration = 0;
+                
+                // UI 표시
+                container.style.display = 'block';
+                spaceship.style.left = shooterGame.spaceship.x - 20 + 'px';
+                spaceship.style.top = shooterGame.spaceship.y - 20 + 'px';
+                
+                // 배경 초기화
+                if (background) background.className = 'space-background level-1';
+                if (starsContainer) starsContainer.className = 'stars-bg level-1';
+                
+                // 별 배경 생성
+                createStarBackground();
+                
+                // 무기 표시 초기화
+                updateWeaponIndicator();
+                updateAbilityUI();
+                
+                // UI 업데이트
+                updateShooterUI();
+                
+                // 게임 루프 시작
+                requestAnimationFrame(gameLoop);
+            } catch (error) {
+                console.error('Game Start Error:', error);
+                showMessage('Error starting game. Please refresh the page.');
+            }
+        }
+        
+        // 키보드 입력 처리
+        document.addEventListener('keydown', (e) => {
+            keys[e.key.toLowerCase()] = true;
+            keys[e.code] = true;
+            
+            // 오디오 초기화
+            if (!audioContext) {
+                initAudio();
+            }
+            
+            // 특수 능력 키
+            if (e.key.toLowerCase() === 'q' && gameState.phase3.abilities.megaShot.ready) {
+                activateMegaShot();
+            }
+            if (e.key.toLowerCase() === 'e' && gameState.phase3.abilities.timeSlow.ready) {
+                activateTimeSlow();
+            }
+            if (e.code === 'ShiftLeft' && gameState.phase3.abilities.dash.ready) {
+                activateDash();
+            }
+        });
+        
+        document.addEventListener('keyup', (e) => {
+            keys[e.key.toLowerCase()] = false;
+            keys[e.code] = false;
+        });
+        
+        // 특수 능력들
+        function activateMegaShot() {
+            if (!gameState.phase3.abilities.megaShot.ready) return;
+            
+            // 메가샷 발사
+            const shipX = shooterGame.spaceship.x;
+            const shipY = shooterGame.spaceship.y;
+            
+            // 강력한 레이저 발사
+            for (let i = -2; i <= 2; i++) {
+                createBullet(shipX + i * 30, shipY - 20, 0, 'piercing');
+            }
+            
+            // 큰 폭발 총알
+            createBullet(shipX, shipY - 40, 0, 'missile');
+            
+            // 능력 쿨다운 시작
+            gameState.phase3.abilities.megaShot.ready = false;
+            gameState.phase3.abilities.megaShot.cooldown = gameState.phase3.abilities.megaShot.maxCooldown;
+            
+            // 우주선 차징 효과
+            const ship = document.getElementById('spaceship');
+            if (ship) {
+                ship.classList.add('charging');
+                setTimeout(() => ship.classList.remove('charging'), 500);
+            }
+            
+            // 화면 흔들림
+            document.body.classList.add('screen-shake');
+            setTimeout(() => document.body.classList.remove('screen-shake'), 500);
+            
+            playSound('megaShot');
+            updateAbilityUI();
+        }
+        
+        function activateTimeSlow() {
+            if (!gameState.phase3.abilities.timeSlow.ready) return;
+            
+            // 시간 정지 효과 활성화
+            gameState.phase3.timeSlowActive = true;
+            gameState.phase3.timeSlowDuration = 300; // 5초
+            
+            // 시간 정지 시각 효과
+            const timeSlowOverlay = document.createElement('div');
+            timeSlowOverlay.className = 'time-slow-effect';
+            timeSlowOverlay.id = 'time-slow-overlay';
+            document.body.appendChild(timeSlowOverlay);
+            
+            // 모든 애니메이션 속도 감소
+            document.body.classList.add('time-slow-active');
+            
+            // 능력 쿨다운 시작
+            gameState.phase3.abilities.timeSlow.ready = false;
+            gameState.phase3.abilities.timeSlow.cooldown = gameState.phase3.abilities.timeSlow.maxCooldown;
+            
+            playSound('timeSlow');
+            updateAbilityUI();
+        }
+        
+        function activateDash() {
+            if (!gameState.phase3.abilities.dash.ready || shooterGame.dashActive) return;
+            
+            // 대시 활성화
+            shooterGame.dashActive = true;
+            shooterGame.dashDuration = 30; // 0.5초
+            
+            // 우주선 대시 효과
+            const ship = document.getElementById('spaceship');
+            if (ship) {
+                ship.classList.add('dashing');
+            }
+            
+            // 무적 시간
+            shooterGame.invulnerable = true;
+            
+            // 능력 쿨다운 시작
+            gameState.phase3.abilities.dash.ready = false;
+            gameState.phase3.abilities.dash.cooldown = gameState.phase3.abilities.dash.maxCooldown;
+            
+            // 대시 궤적 파티클
+            createDashTrail();
+            
+            playSound('dash');
+            updateAbilityUI();
+        }
+        
+        function createDashTrail() {
+            const container = document.getElementById('space-shooter-container');
+            if (!container) return;
+            
+            for (let i = 0; i < 10; i++) {
+                setTimeout(() => {
+                    const trail = document.createElement('div');
+                    trail.className = 'particle trail';
+                    trail.style.left = shooterGame.spaceship.x + 'px';
+                    trail.style.top = shooterGame.spaceship.y + 'px';
+                    container.appendChild(trail);
+                    
+                    setTimeout(() => trail.remove(), 500);
+                }, i * 30);
+            }
+        }
+        
+        // 능력 UI 업데이트
+        function updateAbilityUI() {
+            const abilities = ['mega-shot', 'time-slow', 'dash'];
+            
+            abilities.forEach(ability => {
+                const icon = document.getElementById(`${ability}-icon`);
+                const abilityKey = ability.replace('-', '');
+                const abilityData = gameState.phase3.abilities[abilityKey];
+                
+                if (!icon || !abilityData) return;
+                
+                if (abilityData.ready) {
+                    icon.className = 'ability-icon ready';
+                    icon.setAttribute('data-cooldown', '');
+                } else {
+                    icon.className = 'ability-icon cooldown';
+                    const cooldownSeconds = Math.ceil(abilityData.cooldown / 60);
+                    icon.setAttribute('data-cooldown', cooldownSeconds + 's');
+                }
+            });
+        }
+        
+        // 능력 쿨다운 업데이트
+        function updateAbilityCooldowns() {
+            Object.keys(gameState.phase3.abilities).forEach(abilityName => {
+                const ability = gameState.phase3.abilities[abilityName];
+                if (!ability.ready && ability.cooldown > 0) {
+                    ability.cooldown--;
+                    if (ability.cooldown <= 0) {
+                        ability.ready = true;
+                    }
+                }
+            });
+            updateAbilityUI();
+        }
+        
+        // 시간 정지 효과 업데이트
+        function updateTimeSlowEffect() {
+            if (gameState.phase3.timeSlowActive) {
+                gameState.phase3.timeSlowDuration--;
+                if (gameState.phase3.timeSlowDuration <= 0) {
+                    gameState.phase3.timeSlowActive = false;
+                    
+                    // 시간 정지 효과 제거
+                    const overlay = document.getElementById('time-slow-overlay');
+                    if (overlay) overlay.remove();
+                    document.body.classList.remove('time-slow-active');
+                }
+            }
+        }
+        
+        // 대시 효과 업데이트
+        function updateDashEffect() {
+            if (shooterGame.dashActive) {
+                shooterGame.dashDuration--;
+                if (shooterGame.dashDuration <= 0) {
+                    shooterGame.dashActive = false;
+                    shooterGame.invulnerable = false;
+                    
+                    const ship = document.getElementById('spaceship');
+                    if (ship) ship.classList.remove('dashing');
+                }
+            }
+        }
+        
+        // 슈터 입력 처리 (강화됨)
+        function handleShooterInput() {
+            const ship = document.getElementById('spaceship');
+            if (!ship) return;
+            
+            let speed = 6;
+            
+            // 대시 중일 때 속도 증가
+            if (shooterGame.dashActive) {
+                speed = 15;
+            }
+            
+            // 좌우 이동
+            if ((keys['arrowleft'] || keys['a']) && shooterGame.spaceship.x > 20) {
+                shooterGame.spaceship.x -= speed;
+            }
+            if ((keys['arrowright'] || keys['d']) && shooterGame.spaceship.x < window.innerWidth - 20) {
+                shooterGame.spaceship.x += speed;
+            }
+            
+            // 상하 이동
+            if ((keys['arrowup'] || keys['w']) && shooterGame.spaceship.y > 100) {
+                shooterGame.spaceship.y -= speed;
+            }
+            if ((keys['arrowdown'] || keys['s']) && shooterGame.spaceship.y < window.innerHeight - 100) {
+                shooterGame.spaceship.y += speed;
+            }
+            
+            // 총 발사
+            if (keys[' '] || keys['Space']) {
+                const now = Date.now();
+                let shootDelay = Math.max(50, 200 - (gameState.phase3.weaponLevel - 1) * 50);
+                
+                // 시간 정지 중에는 더 빠르게 발사
+                if (gameState.phase3.timeSlowActive) {
+                    shootDelay = Math.max(25, shootDelay / 2);
+                }
+                
+                if (now - shooterGame.lastShoot > shootDelay) {
+                    shootBullet();
+                    shooterGame.lastShoot = now;
+                }
+            }
+            
+            ship.style.left = shooterGame.spaceship.x - 20 + 'px';
+            ship.style.top = shooterGame.spaceship.y - 20 + 'px';
+        }
+        
+        // 총알 발사 (다양한 무기 타입)
+        function shootBullet() {
+            const weaponType = gameState.phase3.weaponType;
+            
+            if (gameState.phase3.weaponLevel === 1) {
+                createBullet(shooterGame.spaceship.x, shooterGame.spaceship.y - 20, 0, weaponType);
+            } else if (gameState.phase3.weaponLevel === 2) {
+                createBullet(shooterGame.spaceship.x - 15, shooterGame.spaceship.y - 20, 0, weaponType);
+                createBullet(shooterGame.spaceship.x + 15, shooterGame.spaceship.y - 20, 0, weaponType);
+            } else if (gameState.phase3.weaponLevel === 3) {
+                createBullet(shooterGame.spaceship.x, shooterGame.spaceship.y - 20, 0, weaponType);
+                createBullet(shooterGame.spaceship.x - 20, shooterGame.spaceship.y - 10, -1, weaponType);
+                createBullet(shooterGame.spaceship.x + 20, shooterGame.spaceship.y - 10, 1, weaponType);
+                
+                // 레벨 3에서는 추가 총알
+                if (weaponType === 'spread') {
+                    createBullet(shooterGame.spaceship.x - 30, shooterGame.spaceship.y, -2, weaponType);
+                    createBullet(shooterGame.spaceship.x + 30, shooterGame.spaceship.y, 2, weaponType);
+                }
+            }
+            
+            // 무기 타입에 따른 사운드
+            switch(weaponType) {
+                case 'laser': playSound('laser'); break;
+                case 'missile': playSound('missile'); break;
+                default: playSound('shoot'); break;
+            }
+        }
+        
+        function createBullet(x, y, angle = 0, type = 'normal') {
+            const container = document.getElementById('space-shooter-container');
+            if (!container) return;
+            
+            const bullet = document.createElement('div');
+            bullet.className = `bullet ${type}`;
+            bullet.style.left = x - 2 + 'px';
+            bullet.style.top = y + 'px';
+            container.appendChild(bullet);
+            
+            let speed = -15;
+            let damage = 1;
+            let piercing = false;
+            
+            // 총알 타입별 특성
+            switch(type) {
+                case 'laser':
+                    speed = -25;
+                    damage = 2;
+                    break;
+                case 'missile':
+                    speed = -12;
+                    damage = 3;
+                    break;
+                case 'spread':
+                    speed = -18;
+                    damage = 1;
+                    break;
+                case 'piercing':
+                    speed = -20;
+                    damage = 4;
+                    piercing = true;
+                    break;
+            }
+            
+            shooterGame.bullets.push({
+                element: bullet,
+                x: x,
+                y: y,
+                vx: angle * 3,
+                vy: speed,
+                damage: damage,
+                piercing: piercing,
+                type: type
+            });
+        }
+        
+        // 총알 업데이트
+        function updateBullets() {
+            shooterGame.bullets = shooterGame.bullets.filter(bullet => {
+                bullet.x += bullet.vx;
+                bullet.y += bullet.vy;
+                bullet.element.style.left = bullet.x - 2 + 'px';
+                bullet.element.style.top = bullet.y + 'px';
+                
+                if (bullet.y < -20 || bullet.x < 0 || bullet.x > window.innerWidth) {
+                    bullet.element.remove();
+                    return false;
+                }
+                return true;
+            });
+        }
+        
+        // 적 생성 (다양한 종류)
+        function spawnEnemies() {
+            shooterGame.enemySpawnTimer++;
+            
+            let spawnRate = 120;
+            if (gameState.phase3.timeSlowActive) {
+                spawnRate *= 2; // 시간 정지 중에는 스폰 속도 감소
+            }
+            
+            const levelMultiplier = Math.max(0.6, 1 - (gameState.phase3.level - 1) * 0.08);
+            spawnRate = Math.max(40, (spawnRate - Math.floor(gameState.phase3.score / 500)) * levelMultiplier);
+            
+            if (shooterGame.bossMode) spawnRate = 400;
+            
+            if (shooterGame.enemySpawnTimer >= spawnRate) {
+                const container = document.getElementById('space-shooter-container');
+                if (!container) return;
+                
+                const randType = Math.random();
+                
+                if (randType < 0.5) {
+                    // 다양한 적 종류
+                    let enemyType = 'normal';
+                    let enemyHealth = 1;
+                    let enemySpeed = 1.5;
+                    let enemyReward = 100;
+                    
+                    const enemyTypeRand = Math.random();
+                    if (enemyTypeRand < 0.6) {
+                        enemyType = 'normal';
+                    } else if (enemyTypeRand < 0.75) {
+                        enemyType = 'fast';
+                        enemySpeed = 3;
+                        enemyReward = 150;
+                    } else if (enemyTypeRand < 0.9) {
+                        enemyType = 'tank';
+                        enemyHealth = 3;
+                        enemySpeed = 1;
+                        enemyReward = 200;
+                    } else {
+                        enemyType = 'sniper';
+                        enemyHealth = 2;
+                        enemySpeed = 1.2;
+                        enemyReward = 300;
+                    }
+                    
+                    const enemy = document.createElement('div');
+                    enemy.className = `enemy ${enemyType}`;
+                    const x = Math.random() * (window.innerWidth - 40) + 20;
+                    enemy.style.left = x + 'px';
+                    enemy.style.top = '-40px';
+                    container.appendChild(enemy);
+                    
+                    const speedMultiplier = 1 + (gameState.phase3.level - 1) * 0.15;
+                    shooterGame.enemies.push({
+                        element: enemy,
+                        x: x + 16,
+                        y: -16,
+                        vx: (Math.random() * 2 - 1) * speedMultiplier,
+                        vy: enemySpeed * speedMultiplier,
+                        health: enemyHealth,
+                        maxHealth: enemyHealth,
+                        shootTimer: Math.random() * 60,
+                        type: enemyType,
+                        reward: enemyReward
+                    });
+                } else if (randType < 0.7) {
+                    // 운석
+                    const asteroid = document.createElement('div');
+                    asteroid.className = 'asteroid';
+                    const x = Math.random() * (window.innerWidth - 30) + 15;
+                    asteroid.style.left = x + 'px';
+                    asteroid.style.top = '-30px';
+                    container.appendChild(asteroid);
+                    
+                    const speedMultiplier = 1 + (gameState.phase3.level - 1) * 0.12;
+                    shooterGame.asteroids.push({
+                        element: asteroid,
+                        x: x + 12,
+                        y: -12,
+                        vx: (Math.random() * 1.5 - 0.75) * speedMultiplier,
+                        vy: (2 + Math.random() * 2) * speedMultiplier
+                    });
+                } else {
+                    // 파워업 (확장된 종류)
+                    const powerupTypes = ['weapon', 'health', 'shield', 'score', 'special-ability', 'time-slow'];
+                    const powerupType = powerupTypes[Math.floor(Math.random() * powerupTypes.length)];
+                    
+                    const powerup = document.createElement('div');
+                    powerup.className = `powerup-shooter ${powerupType}`;
+                    const x = Math.random() * (window.innerWidth - 40) + 20;
+                    powerup.style.left = x + 'px';
+                    powerup.style.top = '-40px';
+                    container.appendChild(powerup);
+                    
+                    shooterGame.powerups.push({
+                        element: powerup,
+                        x: x + 15,
+                        y: -15,
+                        vy: 2,
+                        type: powerupType
+                    });
+                }
+                
+                shooterGame.enemySpawnTimer = 0;
+            }
+        }
+        
+        // 보스 생성
+        function spawnBoss() {
+            const container = document.getElementById('space-shooter-container');
+            if (!container) return;
+            
+            const boss = document.createElement('div');
+            boss.className = 'boss-enemy';
+            const x = window.innerWidth / 2 - 30;
+            boss.style.left = x + 'px';
+            boss.style.top = '-60px';
+            container.appendChild(boss);
+            
+            shooterGame.bosses.push({
+                element: boss,
+                x: x + 30,
+                y: -30,
+                vx: 1,
+                vy: 1,
+                health: 20 + gameState.phase3.level * 8,
+                maxHealth: 20 + gameState.phase3.level * 8,
+                shootTimer: 0,
+                movePattern: 0,
+                patternTimer: 0
+            });
+            
+            playSound('bossSpawn');
+        }
+        
+        // 적 업데이트 (강화됨)
+        function updateEnemies() {
+            const timeMultiplier = gameState.phase3.timeSlowActive ? 0.3 : 1;
+            
+            shooterGame.enemies = shooterGame.enemies.filter(enemy => {
+                enemy.x += enemy.vx * timeMultiplier;
+                enemy.y += enemy.vy * timeMultiplier;
+                enemy.element.style.left = enemy.x - 16 + 'px';
+                enemy.element.style.top = enemy.y - 16 + 'px';
+                
+                // 화면 좌우 벽에 부딪히면 방향 전환
+                if (enemy.x <= 16 || enemy.x >= window.innerWidth - 16) {
+                    enemy.vx = -enemy.vx;
+                }
+                
+                // 적이 총을 쏨
+                enemy.shootTimer++;
+                let shootInterval = 120;
+                
+                // 적 타입별 사격 패턴
+                switch(enemy.type) {
+                    case 'fast':
+                        shootInterval = 80;
+                        break;
+                    case 'tank':
+                        shootInterval = 160;
+                        break;
+                    case 'sniper':
+                        shootInterval = 200;
+                        break;
+                }
+                
+                if (enemy.shootTimer >= shootInterval && !gameState.phase3.timeSlowActive) {
+                    if (enemy.type === 'sniper') {
+                        createEnemyBullet(enemy.x, enemy.y + 20, 0, 'sniper');
+                    } else if (enemy.type === 'fast') {
+                        createEnemyBullet(enemy.x, enemy.y + 20, 0, 'rapid');
+                    } else {
+                        createEnemyBullet(enemy.x, enemy.y + 20);
+                    }
+                    enemy.shootTimer = 0;
+                }
+                
+                if (enemy.y > window.innerHeight + 40) {
+                    enemy.element.remove();
+                    // 콤보 리셋
+                    if (gameState.phase3.combo > 0) {
+                        gameState.phase3.combo = 0;
+                        updateShooterUI();
+                    }
+                    return false;
+                }
+                return true;
+            });
+        }
+        
+        // 보스 업데이트
+        function updateBosses() {
+            const timeMultiplier = gameState.phase3.timeSlowActive ? 0.5 : 1;
+            
+            shooterGame.bosses = shooterGame.bosses.filter(boss => {
+                boss.patternTimer += timeMultiplier;
+                
+                // 보스 이동 패턴
+                if (boss.patternTimer >= 180) {
+                    boss.movePattern = (boss.movePattern + 1) % 4; // 패턴 추가
+                    boss.patternTimer = 0;
+                }
+                
+                switch (boss.movePattern) {
+                    case 0: // 좌우 이동
+                        boss.x += boss.vx * 2 * timeMultiplier;
+                        if (boss.x <= 60 || boss.x >= window.innerWidth - 60) {
+                            boss.vx = -boss.vx;
+                        }
+                        break;
+                    case 1: // 원형 이동
+                        boss.x += Math.sin(boss.patternTimer * 0.1) * 3 * timeMultiplier;
+                        boss.y += Math.cos(boss.patternTimer * 0.05) * 1 * timeMultiplier;
+                        break;
+                    case 2: // 플레이어 추적
+                        const dx = shooterGame.spaceship.x - boss.x;
+                        const dy = shooterGame.spaceship.y - boss.y;
+                        const distance = Math.sqrt(dx * dx + dy * dy);
+                        if (distance > 100) {
+                            boss.x += (dx / distance) * 1.5 * timeMultiplier;
+                            boss.y += (dy / distance) * 0.5 * timeMultiplier;
+                        }
+                        break;
+                    case 3: // 지그재그 이동
+                        boss.x += Math.sin(boss.patternTimer * 0.05) * 4 * timeMultiplier;
+                        boss.y += 0.5 * timeMultiplier;
+                        break;
+                }
+                
+                boss.element.style.left = boss.x - 30 + 'px';
+                boss.element.style.top = boss.y - 30 + 'px';
+                
+                // 보스가 총을 쏨 (더 자주)
+                boss.shootTimer += timeMultiplier;
+                if (boss.shootTimer >= 30 && !gameState.phase3.timeSlowActive) {
+                    // 5방향 발사
+                    createEnemyBullet(boss.x - 30, boss.y + 30, -1);
+                    createEnemyBullet(boss.x - 15, boss.y + 30, -0.5);
+                    createEnemyBullet(boss.x, boss.y + 30, 0);
+                    createEnemyBullet(boss.x + 15, boss.y + 30, 0.5);
+                    createEnemyBullet(boss.x + 30, boss.y + 30, 1);
+                    boss.shootTimer = 0;
+                }
+                
+                // 보스 체력바 업데이트
+                const healthBar = document.getElementById('boss-health-fill');
+                if (healthBar) {
+                    const healthPercent = (boss.health / boss.maxHealth) * 100;
+                    healthBar.style.width = healthPercent + '%';
+                }
+                
+                if (boss.health <= 0) {
+                    createExplosion(boss.x, boss.y, true);
+                    boss.element.remove();
+                    
+                    // 보스 처치 보상
+                    const bossReward = 3000 + (gameState.phase3.level * 1000);
+                    gameState.phase3.score += bossReward;
+                    gameState.phase3.combo += 15;
+                    
+                    // 보스 처치 특별 보상 드롭
+                    spawnBossRewards(boss.x, boss.y);
+                    
+                    // 보스 체력바 숨기기
+                    const bossHealthBar = document.getElementById('boss-health-bar');
+                    if (bossHealthBar) bossHealthBar.style.display = 'none';
+                    
+                    shooterGame.bossMode = false;
+                    updateShooterUI();
+                    playSound('victory');
+                    
+                    showMessage('BOSS DEFEATED!\n+' + bossReward + ' POINTS!\nSpecial rewards incoming!');
+                    
+                    return false;
+                }
+                
+                return true;
+            });
+        }
+        
+        // 적 총알 생성 (다양한 타입)
+        function createEnemyBullet(x, y, angle = 0, type = 'normal') {
+            const container = document.getElementById('space-shooter-container');
+            if (!container) return;
+            
+            const bullet = document.createElement('div');
+            bullet.className = `enemy-bullet ${type}`;
+            bullet.style.left = x - 2 + 'px';
+            bullet.style.top = y + 'px';
+            container.appendChild(bullet);
+            
+            let speed = 4;
+            let tracking = false;
+            
+            // 총알 타입별 특성
+            switch(type) {
+                case 'sniper':
+                    speed = 8;
+                    tracking = true;
+                    break;
+                case 'rapid':
+                    speed = 6;
+                    break;
+            }
+            
+            let vx, vy;
+            if (tracking) {
+                // 플레이어 추적
+                const dx = shooterGame.spaceship.x - x;
+                const dy = shooterGame.spaceship.y - y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                vx = (dx / distance) * speed;
+                vy = (dy / distance) * speed;
+            } else {
+                vx = angle * speed;
+                vy = speed;
+            }
+            
+            shooterGame.enemyBullets.push({
+                element: bullet,
+                x: x,
+                y: y,
+                vx: vx,
+                vy: vy,
+                type: type
+            });
+        }
+        
+        // 적 총알 업데이트
+        function updateEnemyBullets() {
+            const timeMultiplier = gameState.phase3.timeSlowActive ? 0.3 : 1;
+            
+            shooterGame.enemyBullets = shooterGame.enemyBullets.filter(bullet => {
+                bullet.x += bullet.vx * timeMultiplier;
+                bullet.y += bullet.vy * timeMultiplier;
+                bullet.element.style.left = bullet.x + 'px';
+                bullet.element.style.top = bullet.y + 'px';
+                
+                if (bullet.y > window.innerHeight + 20 || bullet.y < -20 || 
+                    bullet.x < -20 || bullet.x > window.innerWidth + 20) {
+                    bullet.element.remove();
+                    return false;
+                }
+                return true;
+            });
+        }
+        
+        // 운석 업데이트
+        function updateAsteroids() {
+            const timeMultiplier = gameState.phase3.timeSlowActive ? 0.4 : 1;
+            
+            shooterGame.asteroids = shooterGame.asteroids.filter(asteroid => {
+                asteroid.x += asteroid.vx * timeMultiplier;
+                asteroid.y += asteroid.vy * timeMultiplier;
+                asteroid.element.style.left = asteroid.x - 12 + 'px';
+                asteroid.element.style.top = asteroid.y - 12 + 'px';
+                
+                if (asteroid.y > window.innerHeight + 30) {
+                    asteroid.element.remove();
+                    // 콤보 리셋
+                    if (gameState.phase3.combo > 0) {
+                        gameState.phase3.combo = 0;
+                        updateShooterUI();
+                    }
+                    return false;
+                }
+                return true;
+            });
+        }
+        
+        // 파워업 업데이트
+        function updatePowerups() {
+            const timeMultiplier = gameState.phase3.timeSlowActive ? 0.6 : 1;
+            
+            shooterGame.powerups = shooterGame.powerups.filter(powerup => {
+                powerup.y += powerup.vy * timeMultiplier;
+                powerup.element.style.top = powerup.y - 15 + 'px';
+                
+                if (powerup.y > window.innerHeight + 40) {
+                    powerup.element.remove();
+                    return false;
+                }
+                return true;
+            });
+        }
+        
+        // 파티클 시스템
+        function createParticleEffect(x, y, type = 'spark', count = 5) {
+            const container = document.getElementById('space-shooter-container');
+            if (!container) return;
+            
+            for (let i = 0; i < count; i++) {
+                const particle = document.createElement('div');
+                particle.className = `particle ${type}`;
+                particle.style.left = x + 'px';
+                particle.style.top = y + 'px';
+                
+                // 랜덤 방향
+                const dx = (Math.random() - 0.5) * 60;
+                const dy = (Math.random() - 0.5) * 60;
+                particle.style.setProperty('--dx', dx + 'px');
+                particle.style.setProperty('--dy', dy + 'px');
+                
+                container.appendChild(particle);
+                
+                setTimeout(() => particle.remove(), 800);
+            }
+        }
+        
+        // 충돌 검사
+        function isColliding(rect1, rect2) {
+            return rect1.x < rect2.x + rect2.width &&
+                   rect1.x + rect1.width > rect2.x &&
+                   rect1.y < rect2.y + rect2.height &&
+                   rect1.y + rect1.height > rect2.y;
+        }
+        
+        function checkShooterCollisions() {
+            const shipRect = {
+                x: shooterGame.spaceship.x - 24,
+                y: shooterGame.spaceship.y - 24,
+                width: 48,
+                height: 48
+            };
+            
+            // 플레이어 총알과 적 충돌
+            shooterGame.bullets.forEach((bullet, bulletIndex) => {
+                const bulletRect = {
+                    x: bullet.x - 2,
+                    y: bullet.y - 9,
+                    width: 4,
+                    height: 12
+                };
+                
+                let bulletDestroyed = false;
+                
+                // 일반 적과 충돌
+                shooterGame.enemies.forEach((enemy, enemyIndex) => {
+                    if (bulletDestroyed && !bullet.piercing) return;
+                    
+                    const enemyRect = {
+                        x: enemy.x - 16,
+                        y: enemy.y - 16,
+                        width: 32,
+                        height: 32
+                    };
+                    
+                    if (isColliding(bulletRect, enemyRect)) {
+                        // 데미지 적용
+                        enemy.health -= bullet.damage;
+                        
+                        if (!bullet.piercing) {
+                            bullet.element.remove();
+                            shooterGame.bullets.splice(bulletIndex, 1);
+                            bulletDestroyed = true;
+                        }
+                        
+                        // 적 처치
+                        if (enemy.health <= 0) {
+                            createExplosion(enemy.x, enemy.y);
+                            createParticleEffect(enemy.x, enemy.y, 'spark', 8);
+                            
+                            enemy.element.remove();
+                            shooterGame.enemies.splice(enemyIndex, 1);
+                            
+                            // 콤보 시스템
+                            gameState.phase3.combo++;
+                            if (gameState.phase3.combo > gameState.phase3.maxCombo) {
+                                gameState.phase3.maxCombo = gameState.phase3.combo;
+                            }
+                            
+                            // 점수 계산 (적 타입별 보너스)
+                            const baseScore = enemy.reward || 100;
+                            const comboBonus = Math.min(gameState.phase3.combo * 15, 750);
+                            const totalScore = baseScore + comboBonus;
+                            
+                            gameState.phase3.score += totalScore;
+                            
+                            // 점수 표시
+                            showScoreEffect(enemy.x, enemy.y, '+' + totalScore);
+                            
+                            // 콤보 효과 표시
+                            if (gameState.phase3.combo > 1) {
+                                showComboEffect(enemy.x, enemy.y - 20, gameState.phase3.combo, 'COMBO');
+                                playSound('combo');
+                            }
+                            
+                            // 보상 드롭 시스템
+                            handleEnemyRewards(enemy.x, enemy.y, enemy.type || 'normal');
+                            
+                            updateShooterUI();
+                            playSound('enemyHit');
+                        } else {
+                            // 적 피격 효과
+                            createParticleEffect(bullet.x, bullet.y, 'spark', 3);
+                        }
+                    }
+                });
+                
+                // 보스와 충돌
+                shooterGame.bosses.forEach((boss, bossIndex) => {
+                    if (bulletDestroyed && !bullet.piercing) return;
+                    
+                    const bossRect = {
+                        x: boss.x - 30,
+                        y: boss.y - 30,
+                        width: 60,
+                        height: 60
+                    };
+                    
+                    if (isColliding(bulletRect, bossRect)) {
+                        createParticleEffect(bullet.x, bullet.y, 'spark', 5);
+                        
+                        if (!bullet.piercing) {
+                            bullet.element.remove();
+                            shooterGame.bullets.splice(bulletIndex, 1);
+                            bulletDestroyed = true;
+                        }
+                        
+                        boss.health -= bullet.damage;
+                        
+                        // 보스 히트 점수
+                        const hitScore = 75 + (gameState.phase3.combo * 8);
+                        gameState.phase3.score += hitScore;
+                        showScoreEffect(bullet.x, bullet.y, '+' + hitScore);
+                        
+                        updateShooterUI();
+                        playSound('enemyHit');
+                    }
+                });
+                
+                // 운석과 충돌
+                shooterGame.asteroids.forEach((asteroid, asteroidIndex) => {
+                    if (bulletDestroyed && !bullet.piercing) return;
+                    
+                    const asteroidRect = {
+                        x: asteroid.x - 12,
+                        y: asteroid.y - 12,
+                        width: 24,
+                        height: 24
+                    };
+                    
+                    if (isColliding(bulletRect, asteroidRect)) {
+                        createExplosion(asteroid.x, asteroid.y);
+                        createParticleEffect(asteroid.x, asteroid.y, 'spark', 6);
+                        
+                        if (!bullet.piercing) {
+                            bullet.element.remove();
+                            shooterGame.bullets.splice(bulletIndex, 1);
+                            bulletDestroyed = true;
+                        }
+                        
+                        asteroid.element.remove();
+                        shooterGame.asteroids.splice(asteroidIndex, 1);
+                        
+                        // 운석 파괴 점수
+                        const asteroidScore = 200 + (gameState.phase3.combo * 10);
+                        gameState.phase3.score += asteroidScore;
+                        showScoreEffect(asteroid.x, asteroid.y, '+' + asteroidScore);
+                        
+                        gameState.phase3.combo++;
+                        updateShooterUI();
+                        playSound('enemyHit');
+                    }
+                });
+            });
+            
+            // 방패 상태 업데이트
+            if (gameState.phase3.shielded) {
+                gameState.phase3.shieldTime--;
+                if (gameState.phase3.shieldTime <= 0) {
+                    gameState.phase3.shielded = false;
+                    const ship = document.getElementById('spaceship');
+                    if (ship) ship.classList.remove('shielded');
+                }
+            }
+            
+            // 플레이어와 충돌 검사 (무적 상태가 아니고 방패가 없을 때)
+            if (!shooterGame.invulnerable && !gameState.phase3.shielded) {
+                // 적과 충돌
+                shooterGame.enemies.forEach(enemy => {
+                    const enemyRect = {
+                        x: enemy.x - 16,
+                        y: enemy.y - 16,
+                        width: 32,
+                        height: 32
+                    };
+                    
+                    if (isColliding(shipRect, enemyRect)) {
+                        takeDamageShooter();
+                    }
+                });
+                
+                // 보스와 충돌
+                shooterGame.bosses.forEach(boss => {
+                    const bossRect = {
+                        x: boss.x - 30,
+                        y: boss.y - 30,
+                        width: 60,
+                        height: 60
+                    };
+                    
+                    if (isColliding(shipRect, bossRect)) {
+                        takeDamageShooter();
+                    }
+                });
+                
+                // 적 총알과 충돌
+                shooterGame.enemyBullets.forEach((bullet, index) => {
+                    const bulletRect = {
+                        x: bullet.x - 1,
+                        y: bullet.y - 1,
+                        width: 2,
+                        height: 2
+                    };
+                    
+                    if (isColliding(shipRect, bulletRect)) {
+                        bullet.element.remove();
+                        shooterGame.enemyBullets.splice(index, 1);
+                        takeDamageShooter();
+                    }
+                });
+                
+                // 운석과 충돌
+                shooterGame.asteroids.forEach(asteroid => {
+                    const asteroidRect = {
+                        x: asteroid.x - 12,
+                        y: asteroid.y - 12,
+                        width: 24,
+                        height: 24
+                    };
+                    
+                    if (isColliding(shipRect, asteroidRect)) {
+                        takeDamageShooter();
+                    }
+                });
+            } else if (gameState.phase3.shielded) {
+                // 방패가 있을 때는 적 총알만 막음
+                shooterGame.enemyBullets.forEach((bullet, index) => {
+                    const bulletRect = {
+                        x: bullet.x - 1,
+                        y: bullet.y - 1,
+                        width: 2,
+                        height: 2
+                    };
+                    
+                    if (isColliding(shipRect, bulletRect)) {
+                        createExplosion(bullet.x, bullet.y);
+                        createParticleEffect(bullet.x, bullet.y, 'spark', 4);
+                        bullet.element.remove();
+                        shooterGame.enemyBullets.splice(index, 1);
+                        // 방패 시간 약간 감소
+                        gameState.phase3.shieldTime -= 30;
+                    }
+                });
+            }
+            
+            // 파워업 수집
+            shooterGame.powerups.forEach((powerup, index) => {
+                const powerupRect = {
+                    x: powerup.x - 15,
+                    y: powerup.y - 15,
+                    width: 30,
+                    height: 30
+                };
+                
+                if (isColliding(shipRect, powerupRect)) {
+                    powerup.element.remove();
+                    shooterGame.powerups.splice(index, 1);
+                    
+                    handlePowerupCollection(powerup);
+                }
+            });
+        }
+        
+        // 보스 처치 보상 드롭
+        function spawnBossRewards(x, y) {
+            const container = document.getElementById('space-shooter-container');
+            if (!container) return;
+            
+            // 보스는 항상 여러 보상을 드롭
+            const rewards = [
+                { type: 'weapon', x: x - 50, y: y - 30 },
+                { type: 'health', x: x + 50, y: y - 30 },
+                { type: 'shield', x: x, y: y - 50 },
+                { type: 'special-ability', x: x - 25, y: y },
+                { type: 'time-slow', x: x + 25, y: y },
+                { type: 'special', x: x, y: y + 20 }
+            ];
+            
+            rewards.forEach((reward, index) => {
+                setTimeout(() => {
+                    if (reward.type === 'special') {
+                        spawnSpecialReward(reward.x, reward.y);
+                    } else {
+                        const powerup = document.createElement('div');
+                        powerup.className = `powerup-shooter ${reward.type}`;
+                        powerup.style.left = reward.x - 15 + 'px';
+                        powerup.style.top = reward.y - 15 + 'px';
+                        container.appendChild(powerup);
+                        
+                        shooterGame.powerups.push({
+                            element: powerup,
+                            x: reward.x,
+                            y: reward.y,
+                            vy: 1,
+                            type: reward.type
+                        });
+                    }
+                }, index * 200);
+            });
+            
+            // 추가 코인 드롭 (8개)
+            for (let i = 0; i < 8; i++) {
+                setTimeout(() => {
+                    const angle = (i / 8) * Math.PI * 2;
+                    const coinX = x + Math.cos(angle) * 80;
+                    const coinY = y + Math.sin(angle) * 80;
+                    spawnCoin(coinX, coinY);
+                }, i * 150);
+            }
+        }
+        
+        // 파워업 수집 처리 (확장됨)
+        function handlePowerupCollection(powerup) {
+            const container = document.getElementById('space-shooter-container');
+            
+            switch (powerup.type) {
+                case 'weapon':
+                    if (gameState.phase3.weaponLevel < 3) {
+                        gameState.phase3.weaponLevel++;
+                        updateWeaponIndicator();
+                        showPowerupEffect(powerup.x, powerup.y, 'WEAPON UP!', '#10B981');
+                    } else {
+                        // 무기 타입 변경
+                        const weaponTypes = ['normal', 'laser', 'missile', 'spread', 'piercing'];
+                        const currentIndex = weaponTypes.indexOf(gameState.phase3.weaponType);
+                        const nextIndex = (currentIndex + 1) % weaponTypes.length;
+                        gameState.phase3.weaponType = weaponTypes[nextIndex];
+                        
+                        showPowerupEffect(powerup.x, powerup.y, `${gameState.phase3.weaponType.toUpperCase()} WEAPON!`, '#10B981');
+                    }
+                    break;
+                    
+                case 'health':
+                    if (gameState.phase3.health < 10) {
+                        gameState.phase3.health++;
+                        showPowerupEffect(powerup.x, powerup.y, 'HEALTH UP!', '#E74C3C');
+                    } else {
+                        const bonusScore = 1500 * gameState.phase3.level;
+                        gameState.phase3.score += bonusScore;
+                        showPowerupEffect(powerup.x, powerup.y, '+' + bonusScore, '#E74C3C');
+                    }
+                    break;
+                    
+                case 'shield':
+                    gameState.phase3.shielded = true;
+                    gameState.phase3.shieldTime = 600; // 10초
+                    const ship = document.getElementById('spaceship');
+                    if (ship) ship.classList.add('shielded');
+                    showPowerupEffect(powerup.x, powerup.y, 'SHIELD ON!', '#4A90E2');
+                    break;
+                    
+                case 'score':
+                    const bonusScore = 2000 * gameState.phase3.level;
+                    gameState.phase3.score += bonusScore;
+                    showPowerupEffect(powerup.x, powerup.y, '+' + bonusScore, '#F5D423');
+                    break;
+                    
+                case 'special-ability':
+                    // 모든 능력 쿨다운 리셋
+                    Object.keys(gameState.phase3.abilities).forEach(abilityName => {
+                        gameState.phase3.abilities[abilityName].ready = true;
+                        gameState.phase3.abilities[abilityName].cooldown = 0;
+                    });
+                    updateAbilityUI();
+                    showPowerupEffect(powerup.x, powerup.y, 'ABILITIES RESET!', '#9B59B6');
+                    break;
+                    
+                case 'time-slow':
+                    gameState.phase3.abilities.timeSlow.ready = true;
+                    gameState.phase3.abilities.timeSlow.cooldown = 0;
+                    updateAbilityUI();
+                    showPowerupEffect(powerup.x, powerup.y, 'TIME SLOW READY!', '#4ECDC4');
+                    break;
+                    
+                case 'coin':
+                    const coinValue = powerup.value || (75 + gameState.phase3.level * 15);
+                    gameState.phase3.score += coinValue;
+                    showCoinEffect(powerup.x, powerup.y, '+' + coinValue);
+                    break;
+                    
+                case 'special':
+                    const specialValue = powerup.value || (1500 + gameState.phase3.combo * 75);
+                    gameState.phase3.score += specialValue;
+                    
+                    // 특별 보상은 추가 효과도 제공
+                    if (Math.random() < 0.6) {
+                        gameState.phase3.health = Math.min(10, gameState.phase3.health + 2);
+                    }
+                    if (Math.random() < 0.4) {
+                        gameState.phase3.weaponLevel = Math.min(3, gameState.phase3.weaponLevel + 1);
+                        updateWeaponIndicator();
+                    }
+                    if (Math.random() < 0.3) {
+                        // 랜덤 능력 리셋
+                        const abilities = Object.keys(gameState.phase3.abilities);
+                        const randomAbility = abilities[Math.floor(Math.random() * abilities.length)];
+                        gameState.phase3.abilities[randomAbility].ready = true;
+                        gameState.phase3.abilities[randomAbility].cooldown = 0;
+                        updateAbilityUI();
+                    }
+                    
+                    showSpecialEffect(powerup.x, powerup.y, '+' + specialValue + ' MEGA!');
+                    
+                    // 특별한 사운드와 화면 효과
+                    createSpecialPickupEffect(powerup.x, powerup.y);
+                    break;
+            }
+            
+            updateShooterUI();
+            playSound('powerupCollect');
+        }
+        
+        // 콤보 효과 표시
+        function showComboEffect(x, y, combo, text) {
+            const container = document.getElementById('space-shooter-container');
+            if (!container) return;
+            
+            const comboEl = document.createElement('div');
+            const comboColor = combo >= 20 ? '#FF6B6B' : combo >= 15 ? '#F5D423' : combo >= 10 ? '#10B981' : combo >= 5 ? '#4A90E2' : '#9B59B6';
+            
+            comboEl.style.cssText = `
+                position: absolute;
+                left: ${x}px;
+                top: ${y}px;
+                font-size: ${0.5 + Math.min(combo * 0.015, 0.4)}rem;
+                color: ${comboColor};
+                text-shadow: 0 0 ${8 + combo}px ${comboColor};
+                z-index: 50;
+                animation: comboFloat 1.5s ease-out forwards;
+                pointer-events: none;
+                font-weight: bold;
+            `;
+            comboEl.textContent = `${combo}x ${text}!`;
+            container.appendChild(comboEl);
+            
+            // 높은 콤보일수록 더 화려한 효과
+            if (combo >= 15) {
+                // 별 효과 추가
+                for (let i = 0; i < 5; i++) {
+                    setTimeout(() => {
+                        const star = document.createElement('div');
+                        star.style.cssText = `
+                            position: absolute;
+                            left: ${x + (Math.random() - 0.5) * 60}px;
+                            top: ${y + (Math.random() - 0.5) * 30}px;
+                            font-size: 1rem;
+                            color: ${comboColor};
+                            text-shadow: 0 0 15px ${comboColor};
+                            z-index: 49;
+                            animation: comboFloat 1.2s ease-out forwards;
+                            pointer-events: none;
+                        `;
+                        star.textContent = '★';
+                        container.appendChild(star);
+                        
+                        setTimeout(() => {
+                            star.remove();
+                        }, 1200);
+                    }, i * 80);
+                }
+                
+                // 화면 효과
+                document.body.style.filter = `brightness(1.3) saturate(1.2)`;
+                setTimeout(() => {
+                    document.body.style.filter = 'none';
+                }, 200);
+            }
+            
+            setTimeout(() => {
+                comboEl.remove();
+            }, 1500);
+        }
+        
+        // 점수 효과 표시
+        function showScoreEffect(x, y, text) {
+            const container = document.getElementById('space-shooter-container');
+            if (!container) return;
+            
+            const scoreEl = document.createElement('div');
+            scoreEl.style.cssText = `
+                position: absolute;
+                left: ${x}px;
+                top: ${y}px;
+                font-size: 0.7rem;
+                color: #F5E6D3;
+                text-shadow: 0 0 6px #F5E6D3;
+                z-index: 50;
+                animation: scoreFloat 1s ease-out forwards;
+                pointer-events: none;
+                font-weight: bold;
+            `;
+            scoreEl.textContent = text;
+            container.appendChild(scoreEl);
+            
+            setTimeout(() => {
+                scoreEl.remove();
+            }, 1000);
+        }
+        
+        function showPowerupEffect(x, y, text, color) {
+            const container = document.getElementById('space-shooter-container');
+            if (!container) return;
+            
+            const effectEl = document.createElement('div');
+            effectEl.style.cssText = `
+                position: absolute;
+                left: ${x}px;
+                top: ${y}px;
+                font-size: 0.8rem;
+                color: ${color};
+                text-shadow: 0 0 10px ${color};
+                z-index: 50;
+                animation: comboFloat 2s ease-out forwards;
+                pointer-events: none;
+            `;
+            effectEl.textContent = text;
+            container.appendChild(effectEl);
+            
+            setTimeout(() => {
+                effectEl.remove();
+            }, 2000);
+        }
+        
+        // 코인 수집 효과
+        function showCoinEffect(x, y, text) {
+            const container = document.getElementById('space-shooter-container');
+            if (!container) return;
+            
+            const coinEl = document.createElement('div');
+            coinEl.style.cssText = `
+                position: absolute;
+                left: ${x}px;
+                top: ${y}px;
+                font-size: 0.6rem;
+                color: #F5D423;
+                text-shadow: 0 0 8px #F5D423;
+                z-index: 50;
+                animation: coinCollectFloat 1.2s ease-out forwards;
+                pointer-events: none;
+                font-weight: bold;
+            `;
+            coinEl.textContent = text;
+            container.appendChild(coinEl);
+            
+            setTimeout(() => {
+                coinEl.remove();
+            }, 1200);
+        }
+        
+        // 특별 보상 수집 효과
+        function showSpecialEffect(x, y, text) {
+            const container = document.getElementById('space-shooter-container');
+            if (!container) return;
+            
+            const specialEl = document.createElement('div');
+            specialEl.style.cssText = `
+                position: absolute;
+                left: ${x}px;
+                top: ${y}px;
+                font-size: 0.9rem;
+                color: #F5D423;
+                text-shadow: 0 0 15px #F5D423, 0 0 30px #E8A87C;
+                z-index: 50;
+                animation: specialCollectFloat 2s ease-out forwards;
+                pointer-events: none;
+                font-weight: bold;
+            `;
+            specialEl.textContent = text;
+            container.appendChild(specialEl);
+            
+            setTimeout(() => {
+                specialEl.remove();
+            }, 2000);
+        }
+        
+        // 특별 픽업 효과
+        function createSpecialPickupEffect(x, y) {
+            const container = document.getElementById('space-shooter-container');
+            if (!container) return;
+            
+            // 원형 확산 효과
+            for (let i = 0; i < 16; i++) {
+                setTimeout(() => {
+                    const particle = document.createElement('div');
+                    const angle = (i / 16) * Math.PI * 2;
+                    const startX = x + Math.cos(angle) * 15;
+                    const startY = y + Math.sin(angle) * 15;
+                    
+                    particle.style.cssText = `
+                        position: absolute;
+                        left: ${startX}px;
+                        top: ${startY}px;
+                        width: 4px;
+                        height: 4px;
+                        background: linear-gradient(45deg, #F5D423, #E8A87C);
+                        border-radius: 50%;
+                        box-shadow: 0 0 8px #F5D423;
+                        z-index: 45;
+                        animation: specialParticleFloat 1.5s ease-out forwards;
+                    `;
+                    container.appendChild(particle);
+                    
+                    setTimeout(() => {
+                        particle.remove();
+                    }, 1500);
+                }, i * 40);
+            }
+            
+            // 화면 가장자리 번쩍임 효과
+            document.body.style.boxShadow = 'inset 0 0 50px #F5D423';
+            setTimeout(() => {
+                document.body.style.boxShadow = 'none';
+            }, 300);
+        }
+        
+        // 적 처치 보상 시스템 (개선됨)
+        function handleEnemyRewards(x, y, enemyType) {
+            const container = document.getElementById('space-shooter-container');
+            if (!container) return;
+            
+            // 기본 보상 확률
+            let powerupChance = 0.12;
+            let coinChance = 0.5;
+            
+            // 적 타입별 보상 확률
+            switch(enemyType) {
+                case 'fast':
+                    powerupChance += 0.05;
+                    coinChance += 0.1;
+                    break;
+                case 'tank':
+                    powerupChance += 0.1;
+                    coinChance += 0.2;
+                    break;
+                case 'sniper':
+                    powerupChance += 0.15;
+                    coinChance += 0.15;
+                    break;
+            }
+            
+            // 콤보에 따른 보상 확률 증가
+            if (gameState.phase3.combo >= 5) {
+                powerupChance += 0.08;
+                coinChance += 0.2;
+            }
+            if (gameState.phase3.combo >= 10) {
+                powerupChance += 0.12;
+                coinChance += 0.3;
+            }
+            if (gameState.phase3.combo >= 15) {
+                powerupChance += 0.15;
+                coinChance = 1.0; // 보장
+            }
+            
+            // 레벨에 따른 보상 확률 증가
+            powerupChance += (gameState.phase3.level - 1) * 0.02;
+            
+            // 코인 드롭
+            if (Math.random() < coinChance) {
+                spawnCoin(x, y);
+            }
+            
+            // 파워업 드롭
+            if (Math.random() < powerupChance) {
+                const powerupTypes = ['weapon', 'health', 'shield', 'score', 'special-ability', 'time-slow'];
+                
+                // 현재 상황에 따른 스마트 파워업 선택
+                let selectedType;
+                if (gameState.phase3.health <= 2 && Math.random() < 0.7) {
+                    selectedType = 'health';
+                } else if (gameState.phase3.weaponLevel < 3 && Math.random() < 0.5) {
+                    selectedType = 'weapon';
+                } else if (!gameState.phase3.shielded && Math.random() < 0.4) {
+                    selectedType = 'shield';
+                } else if (!gameState.phase3.abilities.timeSlow.ready && Math.random() < 0.3) {
+                    selectedType = 'time-slow';
+                } else {
+                    selectedType = powerupTypes[Math.floor(Math.random() * powerupTypes.length)];
+                }
+                
+                const powerup = document.createElement('div');
+                powerup.className = `powerup-shooter ${selectedType}`;
+                powerup.style.left = x - 15 + 'px';
+                powerup.style.top = y - 15 + 'px';
+                container.appendChild(powerup);
+                
+                shooterGame.powerups.push({
+                    element: powerup,
+                    x: x,
+                    y: y,
+                    vy: 1.5,
+                    type: selectedType
+                });
+            }
+            
+            // 특별 보상 (매우 높은 콤보 시)
+            if (gameState.phase3.combo >= 20 && Math.random() < 0.4) {
+                spawnSpecialReward(x, y);
+            }
+        }
+        
+        // 코인 생성
+        function spawnCoin(x, y) {
+            const container = document.getElementById('space-shooter-container');
+            if (!container) return;
+            
+            const coin = document.createElement('div');
+            coin.className = 'coin';
+            coin.style.cssText = `
+                position: absolute;
+                width: 8px;
+                height: 8px;
+                left: ${x - 4}px;
+                top: ${y - 4}px;
+                background: #F5D423;
+                border-radius: 50%;
+                box-shadow: 0 0 8px #F5D423;
+                z-index: 15;
+                animation: coinFloat 2s ease-in-out infinite;
+            `;
+            container.appendChild(coin);
+            
+            const coinValue = 75 + (gameState.phase3.level * 15);
+            
+            shooterGame.powerups.push({
+                element: coin,
+                x: x,
+                y: y,
+                vy: 1,
+                type: 'coin',
+                value: coinValue
+            });
+        }
+        
+        // 특별 보상 생성
+        function spawnSpecialReward(x, y) {
+            const container = document.getElementById('space-shooter-container');
+            if (!container) return;
+            
+            const specialReward = document.createElement('div');
+            specialReward.className = 'special-reward';
+            specialReward.style.cssText = `
+                position: absolute;
+                width: 12px;
+                height: 12px;
+                left: ${x - 6}px;
+                top: ${y - 6}px;
+                background: linear-gradient(45deg, #F5D423, #E8A87C, #4A90E2);
+                border-radius: 50%;
+                box-shadow: 0 0 16px #F5D423;
+                z-index: 15;
+                animation: specialRewardFloat 1.5s ease-in-out infinite;
+            `;
+            container.appendChild(specialReward);
+            
+            const specialEffect = document.createElement('div');
+            specialEffect.style.cssText = `
+                position: absolute;
+                top: -20px;
+                left: 50%;
+                transform: translateX(-50%);
+                font-size: 6px;
+                color: #F5D423;
+                text-shadow: 0 0 8px #F5D423;
+                white-space: nowrap;
+                animation: powerUpText 1s ease-in-out infinite;
+                pointer-events: none;
+            `;
+            specialEffect.textContent = 'MEGA!';
+            specialReward.appendChild(specialEffect);
+            
+            shooterGame.powerups.push({
+                element: specialReward,
+                x: x,
+                y: y,
+                vy: 0.8,
+                type: 'special',
+                value: 1500 + (gameState.phase3.combo * 75)
+            });
+        }
+        
+        // 폭발 효과
+        function createExplosion(x, y, large = false) {
+            const container = document.getElementById('space-shooter-container');
+            if (!container) return;
+            
+            const explosion = document.createElement('div');
+            explosion.className = large ? 'explosion large' : 'explosion';
+            explosion.style.left = x - (large ? 30 : 20) + 'px';
+            explosion.style.top = y - (large ? 30 : 20) + 'px';
+            container.appendChild(explosion);
+            
+            setTimeout(() => {
+                explosion.remove();
+            }, large ? 800 : 500);
+            
+            if (large) {
+                // 큰 폭발에는 추가 파티클 효과
+                createParticleEffect(x, y, 'spark', 15);
+            }
+        }
+        
+        // 데미지 받기
+        function takeDamageShooter() {
+            if (shooterGame.invulnerable) return;
+            
+            gameState.phase3.health--;
+            
+            // 콤보 리셋
+            gameState.phase3.combo = 0;
+            
+            updateShooterUI();
+            playSound('damage');
+            
+            // 무적 시간
+            shooterGame.invulnerable = true;
+            const ship = document.getElementById('spaceship');
+            if (ship) {
+                ship.classList.add('invulnerable');
+            }
+            
+            // 화면 흔들림
+            document.body.classList.add('screen-shake');
+            setTimeout(() => document.body.classList.remove('screen-shake'), 300);
+            
+            setTimeout(() => {
+                shooterGame.invulnerable = false;
+                if (ship) {
+                    ship.classList.remove('invulnerable');
+                }
+            }, 2000);
+            
+            if (gameState.phase3.health <= 0) {
+                shooterGameOver();
+            }
+        }
+        
+        // UI 업데이트
+        function updateShooterUI() {
+            try {
+                const scoreEl = document.getElementById('shooter-score');
+                const healthEl = document.getElementById('shooter-health');
+                const levelEl = document.getElementById('shooter-level');
+                const weaponTypeEl = document.getElementById('weapon-type');
+                const comboEl = document.getElementById('combo-count');
+                const comboIndicator = document.getElementById('combo-indicator');
+                
+                if (scoreEl) scoreEl.textContent = gameState.phase3.score.toLocaleString();
+                if (healthEl) healthEl.textContent = gameState.phase3.health;
+                if (levelEl) levelEl.textContent = gameState.phase3.level;
+                if (weaponTypeEl) weaponTypeEl.textContent = gameState.phase3.weaponType.toUpperCase();
+                
+                // 콤보 표시
+                if (comboEl && comboIndicator) {
+                    if (gameState.phase3.combo > 1) {
+                        comboEl.textContent = gameState.phase3.combo;
+                        comboIndicator.style.display = 'block';
+                        
+                        // 콤보에 따른 색상 변경
+                        const comboColor = gameState.phase3.combo >= 20 ? '#FF6B6B' : 
+                                         gameState.phase3.combo >= 15 ? '#F5D423' : 
+                                         gameState.phase3.combo >= 10 ? '#10B981' : '#4A90E2';
+                        comboIndicator.style.color = comboColor;
+                    } else {
+                        comboIndicator.style.display = 'none';
+                    }
+                }
+                
+                // 레벨 업데이트
+                const newLevel = Math.min(7, Math.floor(gameState.phase3.score / 400) + 1);
+                if (newLevel > gameState.phase3.level) {
+                    gameState.phase3.level = newLevel;
+                    if (levelEl) levelEl.textContent = gameState.phase3.level;
+                    updateBackgroundLevel();
+                    showLevelUpEffect();
+                    
+                    // 레벨 7 도달 시 특별 메시지
+                    if (gameState.phase3.level === 7) {
+                        setTimeout(() => {
+                            showMessage('COSMIC TRANSCENDENCE ACHIEVED!\nYou have reached the ultimate plane!\nFinal Boss approaching soon...');
+                        }, 2500);
+                    }
+                }
+            } catch (error) {
+                console.error('UI Update Error:', error);
+            }
+        }
+        
+        // 배경 레벨 업데이트
+        function updateBackgroundLevel() {
+            const background = document.querySelector('.space-background');
+            const starsContainer = document.getElementById('stars-bg');
+            
+            if (!background || !starsContainer) return;
+            
+            // 모든 레벨 클래스 제거
+            for (let i = 1; i <= 7; i++) {
+                background.classList.remove(`level-${i}`);
+                starsContainer.classList.remove(`level-${i}`);
+            }
+            // 현재 레벨 클래스 추가
+            background.classList.add(`level-${gameState.phase3.level}`);
+            starsContainer.classList.add(`level-${gameState.phase3.level}`);
+        }
+        
+        // 레벨업 효과
+        function showLevelUpEffect() {
+            const container = document.getElementById('space-shooter-container');
+            if (!container) return;
+            
+            const levelUpMsg = document.createElement('div');
+            levelUpMsg.style.cssText = `
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                font-size: 2.5rem;
+                color: #ffd700;
+                text-shadow: 0 0 20px #ffd700;
+                z-index: 100;
+                animation: levelUpAnimation 2s ease-out forwards;
+            `;
+            levelUpMsg.textContent = `LEVEL ${gameState.phase3.level}!`;
+            container.appendChild(levelUpMsg);
+            
+            playSound('levelUp');
+            
+            // 레벨 4부터 우주 입자 효과 추가
+            if (gameState.phase3.level >= 4) {
+                createCosmicParticles();
+            }
+            
+            // 화면 효과
+            document.body.style.filter = 'brightness(1.5) saturate(1.3)';
+            setTimeout(() => {
+                document.body.style.filter = 'none';
+            }, 400);
+            
+            setTimeout(() => {
+                levelUpMsg.remove();
+            }, 2000);
+        }
+        
+        // 우주 입자 생성
+        function createCosmicParticles() {
+            const container = document.getElementById('space-shooter-container');
+            if (!container) return;
+            
+            const particleCount = gameState.phase3.level * 4;
+            
+            for (let i = 0; i < particleCount; i++) {
+                setTimeout(() => {
+                    const particle = document.createElement('div');
+                    particle.className = 'cosmic-particle';
+                    if (gameState.phase3.level >= 5) {
+                        particle.classList.add(`level-${gameState.phase3.level}`);
+                    }
+                    particle.style.left = Math.random() * 100 + '%';
+                    particle.style.animationDuration = (2 + Math.random() * 3) + 's';
+                    particle.style.animationDelay = Math.random() * 1 + 's';
+                    container.appendChild(particle);
+                    
+                    // 화면을 벗어나면 제거
+                    setTimeout(() => {
+                        particle.remove();
+                    }, 6000);
+                }, i * 80);
+            }
+        }
+        
+        // 무기 표시 업데이트
+        function updateWeaponIndicator() {
+            try {
+                const dots = document.querySelectorAll('.weapon-dot');
+                if (dots && dots.length > 0) {
+                    dots.forEach((dot, index) => {
+                        if (index < gameState.phase3.weaponLevel) {
+                            dot.classList.add('active');
+                        } else {
+                            dot.classList.remove('active');
+                        }
+                    });
+                }
+            } catch (error) {
+                console.error('Weapon Indicator Error:', error);
+            }
+        }
+        
+        // 보스 모드 시작
+        function startBossMode() {
+            if (shooterGame.bosses.length > 0) return;
+            
+            shooterGame.bossMode = true;
+            showMessage('WARNING!\nFINAL BOSS APPROACHING!\nPrepare for ultimate battle!');
+            
+            // 보스 생성
+            setTimeout(() => {
+                spawnBoss();
+            }, 2500);
+            
+            // 보스 체력바 표시
+            const bossHealthBar = document.getElementById('boss-health-bar');
+            if (bossHealthBar) bossHealthBar.style.display = 'block';
+        }
+        
+        // 게임 오버
+        function shooterGameOver() {
+            shooterGame.gameRunning = false;
+            playSound('damage');
+            
+            const finalMessage = `MISSION INCOMPLETE!\n\nFinal Score: ${gameState.phase3.score.toLocaleString()}\nMax Level: ${gameState.phase3.level}\nMax Combo: ${gameState.phase3.maxCombo}x\nWeapon Type: ${gameState.phase3.weaponType.toUpperCase()}\n\nYour liberation journey continues...`;
+            
+            showMessage(finalMessage);
+            
+            // 보스 체력바 숨기기
+            const bossHealthBar = document.getElementById('boss-health-bar');
+            if (bossHealthBar) bossHealthBar.style.display = 'none';
+            
+            setTimeout(() => {
+                testRestart();
+            }, 5000);
+        }
+        
+        // 최종 승리
+        function finalVictory() {
+            shooterGame.gameRunning = false;
+            playSound('victory');
+            
+            const container = document.getElementById('space-shooter-container');
+            const victoryScreen = document.getElementById('victory-screen');
+            const bossHealthBar = document.getElementById('boss-health-bar');
+            
+            if (container) container.style.display = 'none';
+            if (victoryScreen) victoryScreen.style.display = 'flex';
+            if (bossHealthBar) bossHealthBar.style.display = 'none';
+            
+            const victoryMsg = document.getElementById('victory-message');
+            if (victoryMsg) {
+                victoryMsg.innerHTML = `
+                    🎉 ULTIMATE COSMIC TRANSCENDENCE! 🎉<br><br>
+                    You have transcended all boundaries!<br><br>
+                    Through enhanced cosmic battles across ${gameState.phase3.level} planes of existence,<br>
+                    you have achieved true freedom with superior firepower!<br><br>
+                    Your journey through the stars is complete,<br>
+                    but your spirit soars eternal.<br><br>
+                    <div style="color: #F5D423; margin-top: 20px;">
+                        📊 FINAL ENHANCED STATISTICS 📊<br><br>
+                        Final Score: ${gameState.phase3.score.toLocaleString()}<br>
+                        Cosmic Level: ${gameState.phase3.level}/7<br>
+                        Weapon Level: ${gameState.phase3.weaponLevel}/3<br>
+                        Weapon Type: ${gameState.phase3.weaponType.toUpperCase()}<br>
+                        Max Combo: ${gameState.phase3.maxCombo}x<br><br>
+                        🌟 Thank you for playing Enhanced Phase 3! 🌟<br>
+                        <span style="font-size: 0.7rem;">Featuring: Multiple weapon types, special abilities,<br>
+                        enhanced enemies, improved rewards & epic boss battles!</span>
+                    </div>
+                `;
+            }
+            
+            // 축하 효과
+            for (let i = 0; i < 150; i++) {
+                setTimeout(() => {
+                    createVictoryParticles();
+                }, i * 40);
+            }
+        }
+        
+        function createVictoryParticles() {
+            const victoryScreen = document.getElementById('victory-screen');
+            if (!victoryScreen) return;
+            
+            const particle = document.createElement('div');
+            particle.style.position = 'absolute';
+            particle.style.width = '10px';
+            particle.style.height = '10px';
+            particle.style.background = ['#E8A87C', '#F5E6D3', '#10B981', '#4A90E2', '#F5D423', '#9B59B6', '#FF6B6B'][Math.floor(Math.random() * 7)];
+            particle.style.left = Math.random() * 100 + '%';
+            particle.style.top = Math.random() * 100 + '%';
+            particle.style.borderRadius = '50%';
+            particle.style.animation = 'victoryPulse 4s ease-out forwards';
+            particle.style.boxShadow = `0 0 15px ${particle.style.background}`;
+            victoryScreen.appendChild(particle);
+            
+            setTimeout(() => {
+                particle.remove();
+            }, 4000);
+        }
+        
+        // 메시지 표시
+        function showMessage(text) {
+            try {
+                let messageEl = document.getElementById('message');
+                
+                if (!messageEl) {
+                    messageEl = document.createElement('div');
+                    messageEl.id = 'message';
+                    messageEl.style.cssText = `
+                        position: fixed;
+                        top: 50%;
+                        left: 50%;
+                        transform: translate(-50%, -50%);
+                        background: rgba(26, 15, 46, 0.95);
+                        color: #F5E6D3;
+                        padding: 25px 35px;
+                        border-radius: 15px;
+                        text-align: center;
+                        z-index: 1000;
+                        font-size: 0.8rem;
+                        display: none;
+                        border: 3px solid #E8A87C;
+                        box-shadow: 0 0 20px rgba(232, 168, 124, 0.5);
+                        max-width: 500px;
+                        line-height: 1.6;
+                    `;
+                    document.body.appendChild(messageEl);
+                }
+                
+                messageEl.innerHTML = text.replace(/\n/g, '<br>');
+                messageEl.style.display = 'block';
+                
+                setTimeout(() => {
+                    messageEl.style.display = 'none';
+                }, 4000);
+            } catch (error) {
+                console.error('Show Message Error:', error);
+                alert(text);
+            }
+        }
+        
+        // 게임 루프 (강화됨)
+        function gameLoop() {
+            if (!shooterGame.gameRunning) return;
+            
+            handleShooterInput();
+            updateBullets();
+            updateEnemies();
+            updateBosses();
+            updateEnemyBullets();
+            updateAsteroids();
+            updatePowerups();
+            spawnEnemies();
+            checkShooterCollisions();
+            
+            // 특수 효과 업데이트
+            updateAbilityCooldowns();
+            updateTimeSlowEffect();
+            updateDashEffect();
+            
+            // 보스 모드 체크
+            const bossThreshold = Math.max(1000, 2000 - (gameState.phase3.level - 1) * 200);
+            if (gameState.phase3.score >= bossThreshold && !shooterGame.bossMode && shooterGame.bosses.length === 0) {
+                startBossMode();
+            }
+            
+            // 최종 승리 체크
+            if (gameState.phase3.score >= gameState.phase3.targetScore) {
+                finalVictory();
+                return;
+            }
+            
+            requestAnimationFrame(gameLoop);
+        }
+        
+        // 테스트용 재시작 함수
+        function testRestart() {
+            // 모든 요소 제거
+            [...shooterGame.bullets, ...shooterGame.enemies, ...shooterGame.enemyBullets, 
+             ...shooterGame.asteroids, ...shooterGame.powerups, ...shooterGame.bosses].forEach(obj => {
+                if (obj.element && obj.element.parentNode) {
+                    obj.element.remove();
+                }
+            });
+            
+            const container = document.getElementById('space-shooter-container');
+            const victoryScreen = document.getElementById('victory-screen');
+            const transitionScreen = document.getElementById('phase3-transition');
+            const bossHealthBar = document.getElementById('boss-health-bar');
+            const ship = document.getElementById('spaceship');
+            const timeSlowOverlay = document.getElementById('time-slow-overlay');
+            
+            if (container) container.style.display = 'none';
+            if (victoryScreen) victoryScreen.style.display = 'none';
+            if (transitionScreen) transitionScreen.style.display = 'flex';
+            if (bossHealthBar) bossHealthBar.style.display = 'none';
+            if (timeSlowOverlay) timeSlowOverlay.remove();
+            if (ship) {
+                ship.classList.remove('invulnerable', 'shielded', 'charging', 'dashing');
+            }
+            
+            // 화면 효과 제거
+            document.body.classList.remove('time-slow-active', 'screen-shake');
+            document.body.style.filter = 'none';
+            document.body.style.boxShadow = 'none';
+            
+            // 게임 상태 리셋
+            shooterGame.gameRunning = false;
+            shooterGame.invulnerable = false;
+            shooterGame.bossMode = false;
+            shooterGame.dashActive = false;
+            
+            // 카운트다운 다시 시작
+            startCountdown();
+        }
+        
+        // 카운트다운 시작 함수
+        function startCountdown() {
+            let countdown = 5;
+            const subtitleEl = document.getElementById('subtitle');
+            
+            const countdownInterval = setInterval(() => {
+                countdown--;
+                if (countdown > 0 && subtitleEl) {
+                    subtitleEl.innerHTML = `
+                        Your mind is now in perfect harmony<br>
+                        Time to break free from all constraints<br><br>
+                        Navigate through the cosmos<br>
+                        and claim your ultimate liberation<br><br>
+                        <span style="color: #F5D423; font-size: 1.2em; animation: titlePulse 1s ease-in-out infinite;">Starting in ${countdown}...</span>
+                    `;
+                } else if (countdown <= 0) {
+                    clearInterval(countdownInterval);
+                    startPhase3();
+                }
+            }, 1000);
+        }
+
+        // 디버그 함수 (확장됨)
+        window.debugGame = {
+            checkElements: function() {
+                const elements = {
+                    'phase3-transition': document.getElementById('phase3-transition'),
+                    'space-shooter-container': document.getElementById('space-shooter-container'),
+                    'spaceship': document.getElementById('spaceship'),
+                    'stars-bg': document.getElementById('stars-bg'),
+                    'shooter-score': document.getElementById('shooter-score'),
+                    'shooter-health': document.getElementById('shooter-health'),
+                    'weapon-dots': document.querySelectorAll('.weapon-dot'),
+                    'ability-icons': document.querySelectorAll('.ability-icon')
+                };
+                
+                console.log('=== Enhanced Element Check ===');
+                for (const [name, element] of Object.entries(elements)) {
+                    console.log(`${name}: ${element ? 'Found' : 'NOT FOUND'}`);
+                }
+                return elements;
+            },
+            
+            startGame: function() {
+                console.log('Force starting enhanced game...');
+                enterSpaceShooter();
+            },
+            
+            getState: function() {
+                return {
+                    gameState: gameState,
+                    shooterGame: shooterGame
+                };
+            },
+            
+            addScore: function(amount = 1000) {
+                gameState.phase3.score += amount;
+                updateShooterUI();
+                console.log(`Added ${amount} score. Total: ${gameState.phase3.score}`);
+            },
+            
+            spawnBoss: function() {
+                startBossMode();
+                console.log('Boss spawned!');
+            },
+            
+            maxWeapon: function() {
+                gameState.phase3.weaponLevel = 3;
+                updateWeaponIndicator();
+                console.log('Weapon maxed!');
+            },
+            
+            changeWeapon: function(type) {
+                const types = ['normal', 'laser', 'missile', 'spread', 'piercing'];
+                if (types.includes(type)) {
+                    gameState.phase3.weaponType = type;
+                    updateShooterUI();
+                    console.log(`Weapon changed to ${type}`);
+                } else {
+                    console.log('Available types:', types);
+                }
+            },
+            
+            resetAbilities: function() {
+                Object.keys(gameState.phase3.abilities).forEach(abilityName => {
+                    gameState.phase3.abilities[abilityName].ready = true;
+                    gameState.phase3.abilities[abilityName].cooldown = 0;
+                });
+                updateAbilityUI();
+                console.log('All abilities reset!');
+            },
+            
+            maxHealth: function() {
+                gameState.phase3.health = 10;
+                updateShooterUI();
+                console.log('Health maxed!');
+            },
+            
+            activateShield: function() {
+                gameState.phase3.shielded = true;
+                gameState.phase3.shieldTime = 600;
+                const ship = document.getElementById('spaceship');
+                if (ship) ship.classList.add('shielded');
+                console.log('Shield activated!');
+            }
+        };
+        
+        // 페이지 로드 시 자동으로 카운트다운 시작
+        window.addEventListener('load', function() {
+            console.log('Enhanced Phase 3 loaded, starting countdown...');
+            
+            // 오디오 컨텍스트 초기화를 위한 사용자 상호작용 대기
+            document.addEventListener('click', function initAudioOnClick() {
+                if (!audioContext) {
+                    initAudio();
+                }
+                document.removeEventListener('click', initAudioOnClick);
+            });
+            
+            document.addEventListener('keydown', function initAudioOnKey() {
+                if (!audioContext) {
+                    initAudio();
+                }
+                document.removeEventListener('keydown', initAudioOnKey);
+            });
+            
+            // 카운트다운 자동 시작
+            setTimeout(() => {
+                startCountdown();
+            }, 1000);
+        });
+        
+        console.log('🚀 Enhanced Phase 3 Space Shooter Game v2.0 Loaded!');
+        console.log('🆕 NEW ENHANCED FEATURES:');
+        console.log('- 5 Different weapon types (Normal, Laser, Missile, Spread, Piercing)');
+        console.log('- 3 Special abilities: Mega Shot (Q), Time Slow (E), Dash (Shift)');
+        console.log('- 4 Enemy types: Normal, Fast, Tank, Sniper with unique behaviors');
+        console.log('- Enhanced visual effects: particles, screen shake, improved explosions');
+        console.log('- Smarter reward system with combo-based drops');
+        console.log('- Improved boss AI with 4 movement patterns');
+        console.log('- Enhanced UI with ability cooldowns and weapon type display');
+        console.log('');
+        console.log('🎮 Controls: WASD/Arrow Keys to move, SPACEBAR to shoot');
+        console.log('💥 Special: Q=Mega Shot, E=Time Slow, SHIFT=Dash');
+        console.log('🔧 Debug: debugGame.changeWeapon("laser"), debugGame.resetAbilities(), etc.');
+    </script>
+</body>
+</html>
+    <audio id="phase3-music" src="/mnt/data/Kashido_Minuet_in_G_Major.mp3" autoplay loop hidden></audio>
+    <script>
+    document.addEventListener("DOMContentLoaded", () => {
+        const music = document.getElementById("phase3-music");
+        if (music) {
+            music.volume = 0.5;
+            music.play().catch(e => console.warn("Autoplay blocked:", e));
+        }
+    });
+    </script>
+</body>
+</html>
